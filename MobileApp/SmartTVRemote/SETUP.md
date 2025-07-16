@@ -18,25 +18,25 @@ A React Native mobile application that acts as a remote control for the SmartTV 
 - Node.js 18 or higher
 - React Native CLI
 - Android Studio (for Android development)
-- Xcode (for iOS development, macOS only)
+- Expo CLI (for EAS builds)
 
 ### Installation
 
 1. **Install dependencies:**
    ```bash
-   cd /home/ubuntu/workspace/projects/SmartTV/MobileRemote/SmartTVRemote
    npm install
    ```
 
 2. **For Android development:**
    ```bash
-   npx react-native run-android
+   npm run android
    ```
 
-3. **For iOS development (macOS only):**
+3. **For EAS builds:**
    ```bash
-   cd ios && pod install && cd ..
-   npx react-native run-ios
+   npm run build:dev     # Development build
+   npm run build:preview # Preview build
+   npm run build:production # Production build
    ```
 
 ### SmartTV Setup

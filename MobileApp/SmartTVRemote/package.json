@@ -6,11 +6,11 @@
     "start": "expo start",
     "android": "expo run:android",
     "web": "expo start --web",
-    "build:android:dev": "eas build --platform android --profile development",
-    "build:android:preview": "eas build --platform android --profile preview",
-    "build:android:production": "eas build --platform android --profile production",
-    "submit:android": "eas submit --platform android",
-    "update": "eas update"
+    "build:dev": "eas build --platform android --profile development",
+    "build:preview": "eas build --platform android --profile preview",
+    "build:production": "eas build --platform android --profile production",
+    "submit": "eas submit --platform android",
+    "update": "eas update --platform android"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",

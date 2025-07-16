@@ -310,7 +310,7 @@ export default function App() {
     <Modal visible={showTextInput} transparent animationType="slide">
       <KeyboardAvoidingView 
         style={styles.modalContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="height"
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>

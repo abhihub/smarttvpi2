@@ -8,14 +8,16 @@ SmartTV is a hybrid application consisting of an Electron-based desktop UI for S
 
 ## Architecture
 
-### Three-Component System
+### Four-Component System
 1. **Electron App** (`Electron_App/SmartTV-UI/`) - Main desktop application
 2. **Flask Server** (`server_side/`) - Backend API services  
-3. **Kiosk Configuration** (`kiosk/`) - Linux TV deployment setup
+3. **Mobile App** (`MobileApp/SmartTVRemote/`) - Android remote control app
+4. **Kiosk Configuration** (`kiosk/`) - Linux TV deployment setup
 
 ### Technology Stack
 - **Frontend**: Electron 28.0.0 with vanilla HTML/CSS/JavaScript
 - **Backend**: Flask 5.1.0 with Twilio SDK integration
+- **Mobile**: React Native/Expo with EAS builds (Android-only)
 - **Build**: Electron Forge with security fuses and cross-platform packaging
 - **Deployment**: Linux kiosk mode with hardware acceleration
 
@@ -45,6 +47,24 @@ pip install flask flask-cors python-dotenv twilio
 # Run server
 python app.py              # Starts on port 3001 by default
 # or set custom port: PORT=5000 python app.py
+```
+
+### Mobile App (Android)
+```bash
+cd MobileApp/SmartTVRemote/
+
+# Install dependencies
+npm install
+
+# Development
+npm start                  # Start Expo development server
+npm run android            # Run on Android device/emulator
+
+# EAS Building
+npm run build:dev          # Development APK build
+npm run build:preview      # Preview APK build
+npm run build:production   # Production AAB build
+npm run submit             # Submit to Google Play Store
 ```
 
 ### Environment Setup

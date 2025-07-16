@@ -182,13 +182,32 @@ cd /path/to/SmartTV-UI
 
 ## Mobile App Integration
 
-The mobile app works seamlessly with the WiFi onboarding system:
+The Android mobile app works seamlessly with the WiFi onboarding system:
 
 1. **No Initial Control**: Mobile app cannot control TV until WiFi is connected
 2. **Automatic Setup**: TV automatically starts both QR scanning and soft AP on startup
 3. **Connection Discovery**: App can scan for SmartTV devices on the network after WiFi setup
 4. **Remote Control**: Once WiFi is connected, mobile app provides full remote control
 5. **Fallback**: If WiFi connection is lost, system returns to onboarding mode
+
+### Android App Development
+
+The mobile app is configured for Android-only development using EAS (Expo Application Services):
+
+- **Build Commands**:
+  ```bash
+  npm run build:dev        # Development APK
+  npm run build:preview    # Preview APK
+  npm run build:production # Production AAB
+  ```
+
+- **Testing on Device**:
+  ```bash
+  npm run android         # Run on connected device/emulator
+  ```
+
+- **QR Code Setup**: The mobile app can generate WiFi QR codes for easy TV setup
+- **Network Detection**: App automatically detects available SmartTV devices on the network
 
 ## Security Considerations
 
