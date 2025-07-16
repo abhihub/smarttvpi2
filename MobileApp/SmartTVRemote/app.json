@@ -14,9 +14,6 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/sample_icon.png",
@@ -25,12 +22,17 @@
       "package": "com.smarttvremote",
       "minSdkVersion": 24,
       "targetSdkVersion": 34,
+      "compileSdkVersion": 34,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
-        "ACCESS_WIFI_STATE"
+        "ACCESS_WIFI_STATE",
+        "CAMERA",
+        "VIBRATE"
       ],
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "allowBackup": false,
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

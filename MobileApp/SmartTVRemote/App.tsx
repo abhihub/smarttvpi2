@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import NetInfo from '@react-native-community/netinfo';
+import { BarCodeScanner } from 'expo-barcode-scanner';
 import ConnectionSelector, { ConnectionType } from './src/components/ConnectionSelector';
 
 const { width } = Dimensions.get('window');
