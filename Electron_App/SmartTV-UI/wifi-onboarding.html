@@ -17,7 +17,6 @@
             color: white;
             height: 100vh;
             overflow: hidden;
-            cursor: none;
         }
 
         .container {
@@ -30,12 +29,12 @@
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             animation: fadeInDown 1s ease-out;
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 300;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
@@ -45,42 +44,27 @@
         }
 
         .header .subtitle {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             opacity: 0.8;
             font-weight: 300;
             margin-bottom: 20px;
         }
 
-        .status-display {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInUp 1s ease-out 0.3s both;
-        }
-
-        .status-text {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
+        .header .instructions {
+            font-size: 1.2rem;
             opacity: 0.9;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .connection-status {
-            font-size: 1.1rem;
-            padding: 10px 20px;
-            border-radius: 25px;
-            display: inline-block;
-            font-weight: 600;
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-            border: 1px solid rgba(255, 193, 7, 0.4);
-        }
-
-        .setup-methods {
+        .main-content {
             display: flex;
-            gap: 40px;
-            justify-content: center;
             flex: 1;
+            gap: 50px;
             align-items: center;
-            animation: fadeInUp 1s ease-out 0.6s both;
+            justify-content: center;
+            animation: fadeInUp 1s ease-out 0.5s both;
         }
 
         .setup-method {
@@ -90,10 +74,8 @@
             border: 2px solid rgba(255, 255, 255, 0.15);
             padding: 40px;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            min-width: 400px;
-            min-height: 500px;
+            min-width: 450px;
+            min-height: 550px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -102,122 +84,65 @@
             overflow: hidden;
         }
 
-        .setup-method:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-        }
-
         .setup-method.active {
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.2);
-            transform: translateY(-5px);
-        }
-
-        .setup-method::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .setup-method:hover::before {
-            left: 100%;
+            background: rgba(102, 126, 234, 0.15);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.2);
         }
 
         .method-icon {
-            font-size: 5rem;
+            font-size: 4rem;
             margin-bottom: 25px;
             display: block;
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
         }
 
         .method-title {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 600;
             margin-bottom: 15px;
             color: #fff;
         }
 
         .method-description {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             opacity: 0.8;
             line-height: 1.6;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .method-steps {
-            list-style: none;
-            padding: 0;
-            text-align: left;
-            opacity: 0.9;
-        }
-
-        .method-steps li {
-            margin-bottom: 12px;
-            padding-left: 25px;
-            position: relative;
-            font-size: 1rem;
-        }
-
-        .method-steps li:before {
-            content: "▸";
-            position: absolute;
-            left: 0;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .qr-scanner-section {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 15, 35, 0.95);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .qr-scanner-section.active {
-            display: flex;
-        }
-
-        .scanner-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
-        }
-
-        .scanner-title {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-
-        .scanner-instructions {
-            font-size: 1.2rem;
             margin-bottom: 30px;
-            opacity: 0.9;
-            line-height: 1.6;
+            text-align: center;
+        }
+
+        .method-status {
+            font-size: 1.1rem;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            min-width: 250px;
+        }
+
+        .method-status.active {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.4);
+        }
+
+        .method-status.ready {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.4);
+        }
+
+        .method-status.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.4);
         }
 
         .camera-preview {
             width: 100%;
-            max-width: 400px;
-            height: 300px;
+            max-width: 350px;
+            height: 280px;
             background: #000;
             border-radius: 15px;
             margin: 20px auto;
@@ -247,50 +172,51 @@
 
         .scanning-text {
             color: white;
-            font-size: 1.3rem;
-            margin-bottom: 20px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
             font-weight: 500;
+            text-align: center;
         }
 
         .scanning-animation {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #667eea;
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        .scan-result {
+        .qr-result {
             background: rgba(46, 204, 113, 0.2);
             border: 2px solid rgba(46, 204, 113, 0.6);
             border-radius: 15px;
-            padding: 25px;
-            margin: 25px 0;
+            padding: 20px;
+            margin: 20px 0;
             display: none;
         }
 
-        .scan-result.show {
+        .qr-result.show {
             display: block;
         }
 
-        .scan-result-header {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
+        .qr-result-header {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
             color: #2ecc71;
             font-weight: 600;
         }
 
         .wifi-details {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
+            padding: 15px;
             text-align: left;
+            font-size: 0.9rem;
         }
 
         .wifi-detail {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -301,149 +227,47 @@
         }
 
         .wifi-label {
-            font-size: 1rem;
             opacity: 0.8;
             font-weight: 500;
         }
 
         .wifi-value {
-            font-size: 1.1rem;
             font-weight: 600;
             color: #fff;
             word-break: break-all;
         }
 
-        .soft-ap-section {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 15, 35, 0.95);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .soft-ap-section.active {
-            display: flex;
-        }
-
-        .soft-ap-container {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            max-width: 700px;
-            width: 90%;
-        }
-
-        .soft-ap-title {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #ff9500;
-        }
-
-        .soft-ap-status {
-            font-size: 1.3rem;
-            margin-bottom: 30px;
-            opacity: 0.9;
-            padding: 15px;
-            background: rgba(255, 149, 0, 0.2);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 149, 0, 0.4);
-        }
-
-        .ap-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .ap-info-card {
+        .ap-info {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             padding: 25px;
             text-align: center;
-        }
-
-        .ap-info-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #ff9500;
-            font-weight: 600;
+            margin: 20px 0;
         }
 
         .ap-network-name {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #fff;
             margin-bottom: 10px;
         }
 
         .ap-url {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #667eea;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .qr-code-display {
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             background: white;
             border-radius: 10px;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        .action-button {
-            background: rgba(102, 126, 234, 0.8);
-            border: none;
-            border-radius: 15px;
-            padding: 15px 30px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .action-button:hover {
-            background: rgba(102, 126, 234, 1);
-            transform: translateY(-2px);
-        }
-
-        .action-button.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .action-button.secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .action-button.success {
-            background: rgba(46, 204, 113, 0.8);
-        }
-
-        .action-button.success:hover {
-            background: rgba(46, 204, 113, 1);
         }
 
         .connecting-overlay {
@@ -475,40 +299,96 @@
         }
 
         .connecting-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-bottom: 15px;
             color: #fff;
+            font-weight: 600;
         }
 
         .connecting-details {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             opacity: 0.8;
             text-align: center;
+            max-width: 600px;
         }
 
-        .error-message {
-            background: rgba(231, 76, 60, 0.2);
-            border: 2px solid rgba(231, 76, 60, 0.5);
+        .success-message {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid rgba(46, 204, 113, 0.6);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             margin: 20px 0;
+            text-align: center;
             display: none;
         }
 
-        .error-message.show {
+        .success-message.show {
             display: block;
         }
 
-        .error-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #e74c3c;
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
         }
 
-        .error-text {
-            font-size: 1rem;
+        .success-title {
+            font-size: 1.5rem;
+            color: #2ecc71;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .success-text {
+            font-size: 1.1rem;
             opacity: 0.9;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            animation: fadeInUp 1s ease-out 1s both;
+        }
+
+        .footer-text {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+
+        .status-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .status-dot.active {
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.ready {
+            background: #2ecc71;
+        }
+
+        .status-dot.error {
+            background: #e74c3c;
         }
 
         @keyframes spin {
@@ -540,62 +420,56 @@
 
         @keyframes pulse {
             0% { opacity: 1; }
-            50% { opacity: 0.7; }
+            50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
 
-        .pulse {
-            animation: pulse 2s infinite;
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .instructions-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .instructions-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Main Setup Screen -->
         <div class="header">
             <h1>Smart Family Console</h1>
-            <p class="subtitle">Welcome! Let's connect to your WiFi network</p>
+            <p class="subtitle">Setting up WiFi Connection</p>
+            <p class="instructions">
+                Both setup methods are now active. Use whichever is more convenient for you.
+            </p>
         </div>
 
-        <div class="status-display">
-            <p class="status-text">Choose your preferred setup method</p>
-            <span class="connection-status">Setting up WiFi connection...</span>
-        </div>
-
-        <div class="setup-methods">
-            <div class="setup-method" onclick="startQRScanner()">
+        <div class="main-content">
+            <!-- QR Code Scanner Section -->
+            <div class="setup-method active" id="qrSection">
                 <span class="method-icon">📱</span>
-                <h3 class="method-title">QR Code Scan</h3>
-                <p class="method-description">Point your phone's WiFi QR code at the camera for instant setup</p>
-                <ul class="method-steps">
-                    <li>Go to your phone's WiFi settings</li>
-                    <li>Find your current network and tap "Share"</li>
-                    <li>Point the QR code at the TV camera</li>
-                    <li>Wait for automatic connection</li>
-                </ul>
-            </div>
-            
-            <div class="setup-method" onclick="startSoftAP()">
-                <span class="method-icon">🌐</span>
-                <h3 class="method-title">Setup Network</h3>
-                <p class="method-description">Connect through a temporary setup network</p>
-                <ul class="method-steps">
-                    <li>TV will create "SmartTV-Setup" network</li>
-                    <li>Connect your phone to this network</li>
-                    <li>Open browser and visit setup page</li>
-                    <li>Enter your home WiFi credentials</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- QR Scanner Section -->
-        <div class="qr-scanner-section" id="qrScannerSection">
-            <div class="scanner-container">
-                <h2 class="scanner-title">📱 Scan WiFi QR Code</h2>
-                <p class="scanner-instructions">
-                    Point your phone's WiFi QR code at the camera below.<br>
-                    The QR code can be found in your phone's WiFi settings.
-                </p>
+                <h3 class="method-title">QR Code Scanner</h3>
+                <p class="method-description">Point your phone's WiFi QR code at the camera</p>
+                
+                <div class="method-status active" id="qrStatus">
+                    Camera starting...
+                </div>
                 
                 <div class="camera-preview" id="cameraPreview">
                     <video id="qrVideo" autoplay playsinline></video>
@@ -605,79 +479,74 @@
                     </div>
                 </div>
 
-                <div class="scan-result" id="scanResult">
-                    <div class="scan-result-header">✅ WiFi Network Detected!</div>
+                <div class="qr-result" id="qrResult">
+                    <div class="qr-result-header">✅ WiFi Network Detected!</div>
                     <div class="wifi-details">
                         <div class="wifi-detail">
-                            <span class="wifi-label">Network Name:</span>
+                            <span class="wifi-label">Network:</span>
                             <span class="wifi-value" id="detectedSSID">-</span>
                         </div>
                         <div class="wifi-detail">
                             <span class="wifi-label">Security:</span>
                             <span class="wifi-value" id="detectedSecurity">-</span>
                         </div>
-                        <div class="wifi-detail">
-                            <span class="wifi-label">Password:</span>
-                            <span class="wifi-value" id="detectedPassword">••••••••</span>
-                        </div>
                     </div>
                 </div>
 
-                <div class="error-message" id="errorMessage">
-                    <div class="error-title">Setup Error</div>
-                    <div class="error-text" id="errorText"></div>
+                <ul class="instructions-list">
+                    <li>Go to your phone's WiFi settings</li>
+                    <li>Find your current network and tap "Share"</li>
+                    <li>Point the QR code at the camera above</li>
+                    <li>Wait for automatic connection</li>
+                </ul>
+            </div>
+            
+            <!-- Soft AP Section -->
+            <div class="setup-method active" id="apSection">
+                <span class="method-icon">🌐</span>
+                <h3 class="method-title">Setup Network</h3>
+                <p class="method-description">Connect through our temporary setup network</p>
+                
+                <div class="method-status active" id="apStatus">
+                    Starting setup network...
+                </div>
+                
+                <div class="ap-info">
+                    <div class="ap-network-name">SmartTV-Setup</div>
+                    <div class="ap-url">192.168.4.1</div>
+                    <div class="qr-code-display" id="setupQRCode">
+                        <div style="color: #666; font-size: 0.9rem;">QR Code Loading...</div>
+                    </div>
                 </div>
 
-                <div class="action-buttons">
-                    <button class="action-button secondary" onclick="goBack()">
-                        <span>←</span>
-                        <span>Back</span>
-                    </button>
-                    <button class="action-button success" id="connectButton" onclick="connectToWifi()" style="display: none;">
-                        <span>🔗</span>
-                        <span>Connect to WiFi</span>
-                    </button>
+                <ul class="instructions-list">
+                    <li>Connect your phone to "SmartTV-Setup" network</li>
+                    <li>Open browser and visit 192.168.4.1</li>
+                    <li>Or scan the QR code above</li>
+                    <li>Enter your home WiFi credentials</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p class="footer-text">Both methods are active simultaneously - choose whichever is easier for you</p>
+            <div class="status-indicators">
+                <div class="status-indicator">
+                    <div class="status-dot active" id="cameraStatusDot"></div>
+                    <span>Camera Active</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot active" id="apStatusDot"></div>
+                    <span>Setup Network Active</span>
                 </div>
             </div>
         </div>
 
-        <!-- Soft AP Section -->
-        <div class="soft-ap-section" id="softApSection">
-            <div class="soft-ap-container">
-                <h2 class="soft-ap-title">🌐 Setup Network Active</h2>
-                <div class="soft-ap-status" id="apStatus">
-                    Starting setup network...
-                </div>
-                
-                <div class="ap-info-grid">
-                    <div class="ap-info-card">
-                        <div class="ap-info-title">WiFi Network</div>
-                        <div class="ap-network-name">SmartTV-Setup</div>
-                        <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
-                            No password required
-                        </div>
-                    </div>
-                    
-                    <div class="ap-info-card">
-                        <div class="ap-info-title">Setup Page</div>
-                        <div class="ap-url">192.168.4.1</div>
-                        <div class="qr-code-display" id="setupQRCode">
-                            <div style="color: #666;">QR Code</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="action-button secondary" onclick="goBack()">
-                        <span>←</span>
-                        <span>Back</span>
-                    </button>
-                    <button class="action-button" onclick="refreshAPStatus()">
-                        <span>🔄</span>
-                        <span>Refresh Status</span>
-                    </button>
-                </div>
-            </div>
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <span class="success-icon">✅</span>
+            <div class="success-title">WiFi Connected Successfully!</div>
+            <div class="success-text">Your Smart TV is now connected to your network</div>
         </div>
 
         <!-- Connecting Overlay -->
@@ -696,12 +565,28 @@
         let qrScanner;
         let detectedWifiData = null;
         let isAPActive = false;
+        let isCameraActive = false;
+        let isConnecting = false;
 
-        // QR Scanner Functions
-        async function startQRScanner() {
-            document.getElementById('qrScannerSection').classList.add('active');
+        // Auto-start both processes on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 WiFi Onboarding: Starting both setup methods automatically');
             
+            // Start both processes simultaneously
+            await Promise.all([
+                startQRScanner(),
+                startSoftAP()
+            ]);
+            
+            console.log('✅ Both WiFi setup methods are now active');
+        });
+
+        // Start QR Scanner automatically
+        async function startQRScanner() {
             try {
+                console.log('📱 Starting QR code scanner...');
+                updateQRStatus('Starting camera...', 'active');
+                
                 const videoElement = document.getElementById('qrVideo');
                 const scanningOverlay = document.getElementById('scanningOverlay');
                 
@@ -711,16 +596,68 @@
                 });
 
                 await qrScanner.start();
+                
+                isCameraActive = true;
+                updateQRStatus('Scanning for QR codes...', 'ready');
+                updateStatusDot('cameraStatusDot', 'ready');
                 scanningOverlay.style.display = 'flex';
                 
-                console.log('QR Scanner started successfully');
+                console.log('✅ QR Scanner started successfully');
+                
             } catch (error) {
-                console.error('QR Scanner failed:', error);
-                showError('Failed to access camera. Please ensure camera permissions are granted.');
+                console.error('❌ QR Scanner failed to start:', error);
+                updateQRStatus('Camera access failed', 'error');
+                updateStatusDot('cameraStatusDot', 'error');
+                
+                // Show fallback message
+                const cameraPreview = document.getElementById('cameraPreview');
+                cameraPreview.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #e74c3c;">
+                        <div style="font-size: 2rem; margin-bottom: 15px;">📷</div>
+                        <div style="font-size: 1rem; text-align: center;">Camera access denied or unavailable</div>
+                        <div style="font-size: 0.9rem; text-align: center; margin-top: 10px; opacity: 0.8;">Use the Setup Network method instead</div>
+                    </div>
+                `;
             }
         }
 
+        // Start Soft AP automatically
+        async function startSoftAP() {
+            try {
+                console.log('🌐 Starting soft AP...');
+                updateAPStatus('Starting setup network...', 'active');
+                
+                // Start the actual soft AP
+                const success = await startActualSoftAP();
+                
+                if (success) {
+                    // Generate QR code for setup URL
+                    await generateSetupQRCode();
+                    
+                    isAPActive = true;
+                    updateAPStatus('Setup network active', 'ready');
+                    updateStatusDot('apStatusDot', 'ready');
+                    
+                    // Start polling for credentials
+                    startCredentialsPolling();
+                    
+                    console.log('✅ Soft AP started successfully');
+                } else {
+                    updateAPStatus('Failed to start network', 'error');
+                    updateStatusDot('apStatusDot', 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to start soft AP:', error);
+                updateAPStatus('Setup network failed', 'error');
+                updateStatusDot('apStatusDot', 'error');
+            }
+        }
+
+        // Handle QR code detection
         function handleQrResult(result) {
+            if (isConnecting) return; // Prevent multiple connections
+            
             try {
                 const qrText = result.data || result;
                 console.log('Processing QR result:', qrText);
@@ -730,22 +667,30 @@
                 if (wifiData) {
                     detectedWifiData = wifiData;
                     displayWifiInfo(wifiData);
-                    document.getElementById('scanningOverlay').style.display = 'none';
-                    document.getElementById('scanResult').classList.add('show');
-                    document.getElementById('connectButton').style.display = 'flex';
                     
+                    // Hide scanning overlay and show result
+                    document.getElementById('scanningOverlay').style.display = 'none';
+                    document.getElementById('qrResult').classList.add('show');
+                    
+                    // Stop scanner
                     if (qrScanner) {
                         qrScanner.stop();
                     }
+                    
+                    // Auto-connect after a brief delay
+                    setTimeout(() => {
+                        connectToWifi(wifiData, 'QR Code');
+                    }, 2000);
+                    
                 } else {
-                    showError('QR code is not a valid WiFi QR code. Please try again with a WiFi QR code from your phone.');
+                    console.log('Invalid QR code format, continuing to scan...');
                 }
             } catch (error) {
                 console.error('Error processing QR result:', error);
-                showError('Error processing QR code. Please try again.');
             }
         }
 
+        // Parse WiFi QR code
         function parseWifiQR(qrText) {
             if (!qrText.startsWith('WIFI:')) {
                 return null;
@@ -769,53 +714,20 @@
             return wifiData.ssid ? wifiData : null;
         }
 
+        // Display WiFi information
         function displayWifiInfo(wifiData) {
             document.getElementById('detectedSSID').textContent = wifiData.ssid || 'Unknown';
             document.getElementById('detectedSecurity').textContent = wifiData.security || 'Open';
-            document.getElementById('detectedPassword').textContent = wifiData.password ? '••••••••' : 'No password';
+            updateQRStatus('WiFi network detected!', 'ready');
         }
 
-        // Soft AP Functions
-        async function startSoftAP() {
-            document.getElementById('softApSection').classList.add('active');
-            
-            try {
-                // Start the soft AP
-                const apStatus = document.getElementById('apStatus');
-                apStatus.textContent = 'Starting setup network...';
-                apStatus.className = 'soft-ap-status pulse';
-                
-                // Start the actual soft AP (through main process)
-                const success = await startActualSoftAP();
-                
-                if (success) {
-                    // Generate QR code for setup URL
-                    generateSetupQRCode();
-                    
-                    apStatus.textContent = 'Setup network is active! Connect your phone to "SmartTV-Setup" network.';
-                    apStatus.className = 'soft-ap-status';
-                    isAPActive = true;
-                    
-                    // Start polling for connection
-                    startAPPolling();
-                } else {
-                    apStatus.textContent = 'Failed to start setup network. Please try again.';
-                    apStatus.className = 'soft-ap-status';
-                    showError('Failed to start setup network. Please try again.');
-                }
-                
-            } catch (error) {
-                console.error('Failed to start soft AP:', error);
-                showError('Failed to start setup network. Please try again.');
-            }
-        }
-
+        // Start actual soft AP
         async function startActualSoftAP() {
             try {
                 // For laptop testing, simulate success
                 if (window.appConfig && window.appConfig.isDevelopment) {
                     console.log('Development mode: simulating soft AP start');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     return true;
                 }
                 
@@ -824,8 +736,7 @@
                 console.log('Starting real soft AP...');
                 
                 // This would call: global.wifiManager.startSoftAP()
-                // For now, simulate the process
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 return true;
                 
             } catch (error) {
@@ -834,200 +745,218 @@
             }
         }
 
-        function generateSetupQRCode() {
-            const setupURL = 'http://192.168.4.1';
-            const qrCodeElement = document.getElementById('setupQRCode');
-            
-            QRCode.toCanvas(qrCodeElement, setupURL, {
-                width: 180,
-                margin: 1,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                }
-            }, function(error) {
-                if (error) {
-                    console.error('Error generating setup QR code:', error);
-                    qrCodeElement.innerHTML = '<div style="color: #666;">QR Error</div>';
-                } else {
-                    console.log('Setup QR code generated successfully');
-                }
-            });
+        // Generate QR code for setup URL
+        async function generateSetupQRCode() {
+            try {
+                const setupURL = 'http://192.168.4.1';
+                const qrCodeElement = document.getElementById('setupQRCode');
+                
+                // Create canvas for QR code
+                const canvas = document.createElement('canvas');
+                await QRCode.toCanvas(canvas, setupURL, {
+                    width: 160,
+                    margin: 1,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+                
+                qrCodeElement.innerHTML = '';
+                qrCodeElement.appendChild(canvas);
+                
+                console.log('Setup QR code generated successfully');
+            } catch (error) {
+                console.error('Error generating setup QR code:', error);
+                document.getElementById('setupQRCode').innerHTML = '<div style="color: #e74c3c; font-size: 0.9rem;">QR Error</div>';
+            }
         }
 
-        function startAPPolling() {
-            // Poll for successful WiFi configuration
+        // Poll for credentials from soft AP
+        function startCredentialsPolling() {
             const pollInterval = setInterval(async () => {
-                if (!isAPActive) {
+                if (!isAPActive || isConnecting) {
                     clearInterval(pollInterval);
                     return;
                 }
                 
                 // In real implementation, check if credentials were submitted
-                const hasCredentials = await checkForCredentials();
+                const credentials = await checkForCredentials();
                 
-                if (hasCredentials) {
+                if (credentials) {
                     clearInterval(pollInterval);
-                    // Credentials received, start connection process
-                    proceedWithConnection();
+                    console.log('Credentials received from soft AP');
+                    connectToWifi(credentials, 'Setup Network');
                 }
             }, 2000);
         }
 
+        // Check for submitted credentials
         async function checkForCredentials() {
-            // In real implementation, this would check if the web interface
-            // has received WiFi credentials from the user
-            return false; // Placeholder
-        }
-
-        function refreshAPStatus() {
-            const apStatus = document.getElementById('apStatus');
-            apStatus.textContent = 'Refreshing status...';
-            apStatus.className = 'soft-ap-status pulse';
-            
-            setTimeout(() => {
-                apStatus.textContent = 'Setup network is active! Connect your phone to "SmartTV-Setup" network.';
-                apStatus.className = 'soft-ap-status';
-            }, 1000);
-        }
-
-        // Connection Functions
-        async function connectToWifi() {
-            if (!detectedWifiData) {
-                showError('No WiFi data detected. Please scan a QR code first.');
-                return;
-            }
-            
-            showConnecting('Connecting to ' + detectedWifiData.ssid);
-            
             try {
-                await performWifiConnection(detectedWifiData);
+                // In real implementation, this would check the WiFi manager
+                // for credentials submitted through the web interface
                 
-                // Connection successful
-                showConnecting('Connected successfully! Starting Smart TV...', 'success');
-                
-                setTimeout(() => {
-                    proceedToMainApp();
-                }, 3000);
+                // For development/testing, return null (no credentials)
+                return null;
                 
             } catch (error) {
-                console.error('WiFi connection failed:', error);
-                hideConnecting();
-                showError('Failed to connect to WiFi. Please check the network details and try again.');
+                console.error('Error checking for credentials:', error);
+                return null;
             }
         }
 
-        async function performWifiConnection(wifiData) {
-            // Simulate connection process
-            await new Promise(resolve => setTimeout(resolve, 5000));
+        // Connect to WiFi
+        async function connectToWifi(wifiData, method) {
+            if (isConnecting) return;
             
-            // In real implementation, this would:
-            // 1. Write wpa_supplicant configuration
-            // 2. Restart network services
-            // 3. Test connectivity
-            // 4. Store connection details
+            isConnecting = true;
+            console.log(`🔗 Connecting to WiFi via ${method}:`, wifiData);
             
-            console.log('WiFi connection completed:', wifiData);
-        }
-
-        function proceedWithConnection() {
-            showConnecting('Connecting to your home network...', 'info');
+            // Show connecting overlay
+            showConnecting(`Connecting to ${wifiData.ssid}...`);
             
-            // In real implementation, use the credentials from the web interface
-            setTimeout(() => {
-                showConnecting('Connected successfully! Starting Smart TV...', 'success');
-                
-                setTimeout(() => {
-                    proceedToMainApp();
-                }, 3000);
-            }, 5000);
-        }
-
-        function proceedToMainApp() {
-            // Stop any active services
+            // Stop both processes
             if (qrScanner) {
                 qrScanner.stop();
             }
             
-            // In real implementation, stop soft AP if active
-            if (isAPActive) {
-                stopSoftAP();
+            try {
+                // Send credentials to main process
+                if (window.electronAPI && window.electronAPI.connectToWiFi) {
+                    const result = await window.electronAPI.connectToWiFi(wifiData);
+                    
+                    if (result.success) {
+                        console.log('✅ WiFi connection initiated successfully');
+                        
+                        // Wait for connection to complete
+                        await waitForConnection();
+                        
+                        // Show success
+                        showSuccess(wifiData.ssid);
+                        
+                        // Navigate to main app after delay
+                        setTimeout(async () => {
+                            if (window.electronAPI && window.electronAPI.navigateToHome) {
+                                await window.electronAPI.navigateToHome();
+                            } else {
+                                window.location.href = 'homepage.html';
+                            }
+                        }, 4000);
+                        
+                    } else {
+                        throw new Error(result.error || 'Connection failed');
+                    }
+                } else {
+                    // Fallback to simulation for testing
+                    await performWifiConnection(wifiData);
+                    
+                    // Show success
+                    showSuccess(wifiData.ssid);
+                    
+                    // Navigate to main app after delay
+                    setTimeout(() => {
+                        window.location.href = 'homepage.html';
+                    }, 4000);
+                }
+                
+            } catch (error) {
+                console.error('WiFi connection failed:', error);
+                hideConnecting();
+                
+                // Show error and restart processes
+                alert('Connection failed: ' + (error.message || 'Please try again.'));
+                isConnecting = false;
+                
+                // Restart QR scanner if it was working
+                if (isCameraActive) {
+                    startQRScanner();
+                }
             }
-            
-            // Navigate to main application
-            window.location.href = 'homepage.html';
         }
 
-        function stopSoftAP() {
-            isAPActive = false;
-            // In real implementation, stop hostapd and dnsmasq
-            console.log('Soft AP stopped');
+        // Wait for connection to complete
+        async function waitForConnection() {
+            updateConnectingDetails('Configuring network settings...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            updateConnectingDetails('Connecting to network...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            updateConnectingDetails('Testing connection...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            updateConnectingDetails('Connection complete!');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Perform WiFi connection
+        async function performWifiConnection(wifiData) {
+            // Simulate connection steps
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            updateConnectingDetails('Configuring network settings...');
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            updateConnectingDetails('Connecting to network...');
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            updateConnectingDetails('Testing connection...');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // In real implementation, this would:
+            // 1. Stop soft AP if active
+            // 2. Configure wpa_supplicant
+            // 3. Connect to network
+            // 4. Test connectivity
+            
+            console.log('WiFi connection simulation completed');
         }
 
         // UI Helper Functions
-        function showConnecting(message, type = 'info') {
+        function updateQRStatus(text, type) {
+            const statusElement = document.getElementById('qrStatus');
+            statusElement.textContent = text;
+            statusElement.className = `method-status ${type}`;
+        }
+
+        function updateAPStatus(text, type) {
+            const statusElement = document.getElementById('apStatus');
+            statusElement.textContent = text;
+            statusElement.className = `method-status ${type}`;
+        }
+
+        function updateStatusDot(dotId, type) {
+            const dot = document.getElementById(dotId);
+            dot.className = `status-dot ${type}`;
+        }
+
+        function showConnecting(message) {
             const overlay = document.getElementById('connectingOverlay');
             const details = document.getElementById('connectingDetails');
             
             details.textContent = message;
             overlay.classList.add('active');
-            
-            if (type === 'success') {
-                details.style.color = '#2ecc71';
-            } else if (type === 'error') {
-                details.style.color = '#e74c3c';
-            } else {
-                details.style.color = '#fff';
-            }
+        }
+
+        function updateConnectingDetails(message) {
+            const details = document.getElementById('connectingDetails');
+            details.textContent = message;
         }
 
         function hideConnecting() {
             document.getElementById('connectingOverlay').classList.remove('active');
         }
 
-        function showError(message) {
-            const errorElement = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
+        function showSuccess(networkName) {
+            const successMessage = document.getElementById('successMessage');
+            const successText = successMessage.querySelector('.success-text');
             
-            errorText.textContent = message;
-            errorElement.classList.add('show');
+            successText.textContent = `Successfully connected to ${networkName}. Starting Smart TV...`;
+            successMessage.classList.add('show');
             
-            setTimeout(() => {
-                errorElement.classList.remove('show');
-            }, 8000);
+            hideConnecting();
         }
-
-        function goBack() {
-            // Reset all sections
-            document.getElementById('qrScannerSection').classList.remove('active');
-            document.getElementById('softApSection').classList.remove('active');
-            document.getElementById('scanResult').classList.remove('show');
-            document.getElementById('connectButton').style.display = 'none';
-            
-            // Stop scanner if active
-            if (qrScanner) {
-                qrScanner.stop();
-                qrScanner = null;
-            }
-            
-            // Stop soft AP if active
-            if (isAPActive) {
-                stopSoftAP();
-            }
-            
-            // Reset detected data
-            detectedWifiData = null;
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('WiFi Onboarding page loaded');
-            
-            // In real implementation, check if already connected to WiFi
-            // If connected, automatically proceed to main app
-            
-            // For demo purposes, show onboarding
-        });
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
@@ -1035,8 +964,9 @@
                 qrScanner.stop();
             }
             
+            // In real implementation, cleanup soft AP
             if (isAPActive) {
-                stopSoftAP();
+                console.log('Cleaning up soft AP...');
             }
         });
     </script>

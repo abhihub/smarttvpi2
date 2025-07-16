@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, ipcMain } = require('electron');
 const path = require('path');
 const WebSocketServer = require('./websocket-server');
 const WiFiManager = require('./wifi-manager');
@@ -151,6 +151,11 @@ async function createWindow() {
     });
   } else {
     console.log('📄 Loading wifi-onboarding.html (WiFi setup needed)');
+    
+    // Start WiFi setup mode automatically
+    console.log('🚀 Starting WiFi setup mode automatically...');
+    wifiManager.startSetupMode();
+    
     win.loadFile('wifi-onboarding.html').then(() => {
       console.log('✅ WiFi onboarding loaded successfully');
     }).catch(error => {
@@ -191,6 +196,83 @@ async function checkWiFiConnection() {
     return false;
   }
 }
+
+// IPC handlers for WiFi management
+ipcMain.handle('wifi:connect', async (event, credentials) => {
+  try {
+    console.log('📱 Received WiFi credentials from renderer:', credentials);
+    
+    // Set credentials in WiFi manager
+    wifiManager.setQRCredentials(credentials);
+    
+    return { success: true, message: 'Connection initiated' };
+  } catch (error) {
+    console.error('❌ Error handling WiFi connection:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('wifi:status', async () => {
+  try {
+    const isConnected = await wifiManager.isWiFiConnected();
+    const currentNetwork = await wifiManager.getCurrentNetwork();
+    
+    return {
+      connected: isConnected,
+      network: currentNetwork,
+      setupMode: wifiManager.isInSetupMode()
+    };
+  } catch (error) {
+    console.error('❌ Error getting WiFi status:', error);
+    return { connected: false, error: error.message };
+  }
+});
+
+ipcMain.handle('wifi:startSetup', async () => {
+  try {
+    const success = await wifiManager.startSetupMode();
+    return { success };
+  } catch (error) {
+    console.error('❌ Error starting setup mode:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('wifi:stopSetup', async () => {
+  try {
+    const success = await wifiManager.stopSetupMode();
+    return { success };
+  } catch (error) {
+    console.error('❌ Error stopping setup mode:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('nav:home', async () => {
+  try {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      await win.loadFile('homepage.html');
+      return { success: true };
+    }
+    return { success: false, error: 'No window found' };
+  } catch (error) {
+    console.error('❌ Error navigating to home:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('config:get', async () => {
+  return global.appConfig;
+});
+
+ipcMain.handle('system:info', async () => {
+  return {
+    platform: process.platform,
+    version: process.version,
+    arch: process.arch
+  };
+});
 
 console.log('⏳ Waiting for app to be ready...');
 app.whenReady().then(async () => {

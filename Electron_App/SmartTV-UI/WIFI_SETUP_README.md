@@ -38,23 +38,24 @@ The WiFi onboarding system provides two methods for users to connect their Smart
 
 ## WiFi Setup Flow
 
-### Method 1: QR Code Scanning
+**The system automatically starts both setup methods simultaneously on startup when no WiFi connection is detected. Users don't need to select a method - they can use whichever is more convenient.**
 
-1. **User Action**: Click "QR Code Scan" on the onboarding screen
-2. **Camera Activation**: TV camera starts scanning for QR codes
-3. **QR Code Detection**: User points phone's WiFi QR code at TV
-4. **Credential Parsing**: System extracts SSID, password, and security type
-5. **Connection Process**: TV connects to the detected network
-6. **Success**: TV proceeds to main application
+### Method 1: QR Code Scanning (Automatic)
 
-### Method 2: Soft AP Setup
+1. **Automatic Startup**: TV camera starts scanning for QR codes immediately
+2. **QR Code Detection**: User points phone's WiFi QR code at TV camera
+3. **Credential Parsing**: System extracts SSID, password, and security type
+4. **Automatic Connection**: TV connects to the detected network immediately
+5. **Success**: TV stops all setup processes and proceeds to main application
 
-1. **User Action**: Click "Setup Network" on the onboarding screen
-2. **AP Creation**: TV creates "SmartTV-Setup" WiFi network
+### Method 2: Soft AP Setup (Automatic)
+
+1. **Automatic Startup**: TV creates "SmartTV-Setup" WiFi network immediately
+2. **QR Code Display**: TV shows QR code for easy setup page access
 3. **User Connection**: User connects phone to setup network
 4. **Web Interface**: User accesses http://192.168.4.1 or scans QR code
 5. **Network Selection**: User selects home WiFi and enters password
-6. **Connection Process**: TV connects to home network and stops AP
+6. **Automatic Connection**: TV connects to home network and stops AP
 7. **Success**: TV proceeds to main application
 
 ## Technical Implementation
@@ -133,14 +134,14 @@ For Raspberry Pi deployment:
 
 ### 3. Test QR Code Scanning
 
-1. Navigate to the QR code scanner
+1. The QR code scanner starts automatically when the onboarding page loads
 2. Point laptop camera at the generated QR code
 3. Verify the WiFi credentials are detected and displayed
-4. Click "Connect to WiFi" to test the connection process
+4. The system will automatically connect to the detected network
 
 ### 4. Test Soft AP Setup
 
-1. Navigate to the soft AP setup
+1. The soft AP starts automatically when the onboarding page loads
 2. Verify the setup network status is displayed
 3. Check that the QR code is generated for the setup URL
 4. Test the web interface by opening `wifi-credentials.html`
@@ -183,10 +184,11 @@ cd /path/to/SmartTV-UI
 
 The mobile app works seamlessly with the WiFi onboarding system:
 
-1. **Initial Setup**: Mobile app shows instructions to complete WiFi setup first
-2. **Connection Discovery**: App can scan for SmartTV devices on the network
-3. **Remote Control**: Once WiFi is connected, mobile app provides full remote control
-4. **Fallback**: If WiFi connection is lost, system returns to onboarding mode
+1. **No Initial Control**: Mobile app cannot control TV until WiFi is connected
+2. **Automatic Setup**: TV automatically starts both QR scanning and soft AP on startup
+3. **Connection Discovery**: App can scan for SmartTV devices on the network after WiFi setup
+4. **Remote Control**: Once WiFi is connected, mobile app provides full remote control
+5. **Fallback**: If WiFi connection is lost, system returns to onboarding mode
 
 ## Security Considerations
 

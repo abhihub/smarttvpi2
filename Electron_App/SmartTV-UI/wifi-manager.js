@@ -12,6 +12,7 @@ class WiFiManager {
         this.currentNetwork = null;
         this.credentialsReceived = false;
         this.pendingCredentials = null;
+        this.isSetupMode = false;
         
         // Configuration
         this.AP_SSID = 'SmartTV-Setup';
@@ -476,6 +477,76 @@ network={
     resetCredentials() {
         this.credentialsReceived = false;
         this.pendingCredentials = null;
+    }
+
+    // Start WiFi setup mode (both QR scanning and soft AP)
+    async startSetupMode() {
+        if (this.isSetupMode) {
+            console.log('Setup mode already active');
+            return true;
+        }
+
+        console.log('🚀 Starting WiFi setup mode (parallel QR scanning and soft AP)');
+        this.isSetupMode = true;
+
+        try {
+            // Start soft AP in background
+            const apPromise = this.startSoftAP();
+            
+            // QR scanning is handled by the renderer process
+            // The soft AP will handle credential submission
+            
+            console.log('✅ WiFi setup mode started successfully');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Failed to start WiFi setup mode:', error);
+            this.isSetupMode = false;
+            return false;
+        }
+    }
+
+    // Stop WiFi setup mode
+    async stopSetupMode() {
+        if (!this.isSetupMode) {
+            console.log('Setup mode not active');
+            return true;
+        }
+
+        console.log('🛑 Stopping WiFi setup mode');
+        this.isSetupMode = false;
+
+        try {
+            // Stop soft AP
+            await this.stopSoftAP();
+            
+            // Reset credentials state
+            this.resetCredentials();
+            
+            console.log('✅ WiFi setup mode stopped successfully');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Failed to stop WiFi setup mode:', error);
+            return false;
+        }
+    }
+
+    // Set credentials from QR code (called from renderer)
+    setQRCredentials(credentials) {
+        console.log('📱 QR credentials received:', credentials);
+        this.pendingCredentials = credentials;
+        this.credentialsReceived = true;
+        
+        // Immediately start connection process
+        setTimeout(() => {
+            this.connectToWiFi(credentials);
+        }, 1000);
+    }
+
+    // Check if setup mode is active
+    isInSetupMode() {
+        return this.isSetupMode;
     }
 }
 
