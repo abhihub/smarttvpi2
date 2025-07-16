@@ -1,5 +1,7 @@
 const { app, BrowserWindow, session } = require('electron');
 const path = require('path');
+const WebSocketServer = require('./websocket-server');
+const WiFiManager = require('./wifi-manager');
 require('dotenv').config();
 
 // Store config in global for preload script access
@@ -8,6 +10,15 @@ global.appConfig = {
   WEBSOCKET_URL: process.env.WEBSOCKET_URL || 'ws://localhost:3000',
   isDevelopment: process.env.NODE_ENV === 'development'
 };
+
+// Store WiFi manager reference for renderer access
+global.wifiManager = null;
+
+// Initialize WebSocket server for mobile remote control
+const wsServer = new WebSocketServer(8080);
+
+// Initialize WiFi manager
+const wifiManager = new WiFiManager();
 
 console.log('🚀 MAIN PROCESS STARTING');
 console.log('📋 Main process config:', global.appConfig);
@@ -20,6 +31,8 @@ app.commandLine.appendSwitch('log-net-log-level', '0');
 app.commandLine.appendSwitch('log-file', path.join(app.getPath('userData'), 'electron.log'));
 // Enable experimental Web Speech & Web Platform features
 app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+// Disable sandbox for development
+app.commandLine.appendSwitch('no-sandbox');
 
 // Add more detailed error logging
 process.on('uncaughtException', (error) => {
@@ -30,7 +43,7 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ UNHANDLED REJECTION at:', promise, 'reason:', reason);
 });
 
-function createWindow() {
+async function createWindow() {
   console.log('🪟 CREATING WINDOW');
   
   // Check if explicitly running in kiosk mode via command line flag
@@ -126,27 +139,83 @@ function createWindow() {
     }
   });
 
-  console.log('📄 Loading homepage.html');
-  win.loadFile('homepage.html').then(() => {
-    console.log('✅ Homepage loaded successfully');
-  }).catch(error => {
-    console.error('❌ Failed to load homepage:', error);
-  });
+  // Check WiFi status and load appropriate page
+  const isWiFiConnected = await checkWiFiConnection();
+  
+  if (isWiFiConnected) {
+    console.log('📄 Loading homepage.html (WiFi connected)');
+    win.loadFile('homepage.html').then(() => {
+      console.log('✅ Homepage loaded successfully');
+    }).catch(error => {
+      console.error('❌ Failed to load homepage:', error);
+    });
+  } else {
+    console.log('📄 Loading wifi-onboarding.html (WiFi setup needed)');
+    win.loadFile('wifi-onboarding.html').then(() => {
+      console.log('✅ WiFi onboarding loaded successfully');
+    }).catch(error => {
+      console.error('❌ Failed to load WiFi onboarding:', error);
+    });
+  }
   
   // Enable dev tools for debugging
   win.webContents.openDevTools();
 }
 
+// Check WiFi connection status
+async function checkWiFiConnection() {
+  try {
+    console.log('🔍 Checking WiFi connection status...');
+    
+    // For development/testing on laptop, simulate connected state
+    if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
+      console.log('🧪 Development mode: simulating WiFi connection');
+      return true;
+    }
+    
+    // Check if WiFi is connected (for Raspberry Pi deployment)
+    const isConnected = await wifiManager.isWiFiConnected();
+    
+    if (isConnected) {
+      const network = await wifiManager.getCurrentNetwork();
+      console.log('✅ WiFi connected to:', network ? network.ssid : 'Unknown network');
+      return true;
+    } else {
+      console.log('❌ WiFi not connected, showing onboarding');
+      return false;
+    }
+    
+  } catch (error) {
+    console.error('❌ Error checking WiFi connection:', error);
+    // On error, assume WiFi setup is needed
+    return false;
+  }
+}
+
 console.log('⏳ Waiting for app to be ready...');
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   console.log('🚀 App is ready, creating window');
-  createWindow();
+  
+  // Store WiFi manager globally
+  global.wifiManager = wifiManager;
+  
+  await createWindow();
+  
+  // Start WebSocket server for mobile remote control
+  wsServer.start();
+  
+  // Set the current window in the WebSocket server
+  const win = BrowserWindow.getAllWindows()[0];
+  if (win) {
+    wsServer.setCurrentWindow(win);
+  }
 }).catch(error => {
   console.error('❌ App failed to become ready:', error);
 });
 
 app.on('window-all-closed', () => {
   console.log('🪟 All windows closed');
+  wsServer.stop();
   if (process.platform !== 'darwin') {
     console.log('🛑 Quitting app (not macOS)');
     app.quit();

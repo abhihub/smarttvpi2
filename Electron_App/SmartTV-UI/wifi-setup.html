@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi Setup - Smart Family Console</title>
+    <link rel="stylesheet" href="tv-remote.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 auto;
+        }
+
+        .status-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .status-text {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .connection-status {
+            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .connection-status.connecting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .connection-status.connected {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .setup-options {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            justify-content: center;
+        }
+
+        .setup-option {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            min-width: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .setup-option:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .setup-option.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .setup-option-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .setup-option-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .setup-option-desc {
+            font-size: 1rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .qr-scanner-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .qr-scanner-container.active {
+            display: block;
+        }
+
+        .camera-preview {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            background: #000;
+            border-radius: 12px;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .camera-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scanning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .scanning-text {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .scanning-animation {
+            width: 100px;
+            height: 100px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .scan-result {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .scan-result.show {
+            display: block;
+        }
+
+        .scan-result-text {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .wifi-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .wifi-info-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .wifi-info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .action-button {
+            background: rgba(102, 126, 234, 0.8);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-button:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: translateY(-2px);
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-button.danger {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
+        .action-button.danger:hover {
+            background: rgba(231, 76, 60, 1);
+        }
+
+        .instructions {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .instructions-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffc107;
+        }
+
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .instructions-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="goBack()">
+                <span>←</span>
+                <span>Back to Settings</span>
+            </button>
+            <h1 class="title">WiFi Setup</h1>
+            <div></div>
+        </div>
+
+        <div class="status-display">
+            <p class="status-text">Connect your Smart TV to WiFi</p>
+            <span class="connection-status disconnected" id="connectionStatus">Disconnected</span>
+        </div>
+
+        <div class="setup-options" id="setupOptions">
+            <div class="setup-option" id="qrOption" onclick="selectSetupMethod('qr')">
+                <span class="setup-option-icon">📱</span>
+                <h3 class="setup-option-title">QR Code Scan</h3>
+                <p class="setup-option-desc">Scan WiFi QR code with camera for instant setup</p>
+            </div>
+            
+            <div class="setup-option" id="manualOption" onclick="selectSetupMethod('manual')">
+                <span class="setup-option-icon">🌐</span>
+                <h3 class="setup-option-title">Manual Setup</h3>
+                <p class="setup-option-desc">Connect to setup network and enter credentials</p>
+            </div>
+        </div>
+
+        <div class="qr-scanner-container" id="qrScannerContainer">
+            <h3 style="margin-bottom: 20px;">Point camera at WiFi QR code</h3>
+            
+            <div class="camera-preview" id="cameraPreview">
+                <video id="qrVideo" autoplay playsinline></video>
+                <div class="scanning-overlay" id="scanningOverlay">
+                    <div class="scanning-text">Scanning for QR code...</div>
+                    <div class="scanning-animation"></div>
+                </div>
+            </div>
+
+            <div class="scan-result" id="scanResult">
+                <div class="scan-result-text">✅ QR Code detected!</div>
+                <div class="wifi-info">
+                    <div class="wifi-info-label">Network Name (SSID):</div>
+                    <div class="wifi-info-value" id="detectedSSID">-</div>
+                </div>
+                <div class="wifi-info">
+                    <div class="wifi-info-label">Security:</div>
+                    <div class="wifi-info-value" id="detectedSecurity">-</div>
+                </div>
+                <div class="wifi-info">
+                    <div class="wifi-info-label">Password:</div>
+                    <div class="wifi-info-value" id="detectedPassword">••••••••</div>
+                </div>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                <strong>Error:</strong> <span id="errorText"></span>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-button secondary" onclick="stopScanning()">
+                    <span>⏹️</span>
+                    <span>Stop Scanning</span>
+                </button>
+                <button class="action-button" id="connectButton" onclick="connectToWifi()" style="display: none;">
+                    <span>🔗</span>
+                    <span>Connect to WiFi</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3 class="instructions-title">📋 Instructions</h3>
+            <ul class="instructions-list">
+                <li>Generate a WiFi QR code on your phone using WiFi settings or QR code apps</li>
+                <li>Point the camera at the QR code until it's detected</li>
+                <li>Review the network details and click "Connect to WiFi"</li>
+                <li>Wait for the connection to complete</li>
+                <li>The TV will restart and connect to your WiFi network</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
+    <script>
+        let qrScanner;
+        let isScanning = false;
+        let detectedWifiData = null;
+
+        // Initialize QR scanner
+        async function initQrScanner() {
+            try {
+                const videoElement = document.getElementById('qrVideo');
+                const scanningOverlay = document.getElementById('scanningOverlay');
+                
+                qrScanner = new QrScanner(videoElement, result => {
+                    console.log('QR Code detected:', result);
+                    handleQrResult(result);
+                });
+
+                // Set up camera
+                await qrScanner.start();
+                scanningOverlay.style.display = 'flex';
+                isScanning = true;
+                
+                console.log('QR Scanner initialized successfully');
+            } catch (error) {
+                console.error('QR Scanner initialization failed:', error);
+                showError('Failed to access camera. Please ensure camera permissions are granted.');
+            }
+        }
+
+        // Handle QR code scan result
+        function handleQrResult(result) {
+            try {
+                const qrText = result.data || result;
+                console.log('Processing QR result:', qrText);
+                
+                // Parse WiFi QR code format: WIFI:T:WPA;S:NetworkName;P:Password;H:false;;
+                const wifiData = parseWifiQR(qrText);
+                
+                if (wifiData) {
+                    detectedWifiData = wifiData;
+                    displayWifiInfo(wifiData);
+                    document.getElementById('scanningOverlay').style.display = 'none';
+                    document.getElementById('scanResult').classList.add('show');
+                    document.getElementById('connectButton').style.display = 'flex';
+                    
+                    // Stop scanning after successful detection
+                    if (qrScanner) {
+                        qrScanner.stop();
+                        isScanning = false;
+                    }
+                } else {
+                    showError('QR code is not a valid WiFi QR code. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error processing QR result:', error);
+                showError('Error processing QR code. Please try again.');
+            }
+        }
+
+        // Parse WiFi QR code format
+        function parseWifiQR(qrText) {
+            // WiFi QR format: WIFI:T:WPA;S:NetworkName;P:Password;H:false;;
+            if (!qrText.startsWith('WIFI:')) {
+                return null;
+            }
+
+            const wifiData = {};
+            const parts = qrText.substring(5).split(';');
+            
+            for (const part of parts) {
+                const [key, value] = part.split(':', 2);
+                if (key && value) {
+                    switch (key) {
+                        case 'T': wifiData.security = value; break;
+                        case 'S': wifiData.ssid = value; break;
+                        case 'P': wifiData.password = value; break;
+                        case 'H': wifiData.hidden = value === 'true'; break;
+                    }
+                }
+            }
+
+            return wifiData.ssid ? wifiData : null;
+        }
+
+        // Display WiFi information
+        function displayWifiInfo(wifiData) {
+            document.getElementById('detectedSSID').textContent = wifiData.ssid || 'Unknown';
+            document.getElementById('detectedSecurity').textContent = wifiData.security || 'Open';
+            document.getElementById('detectedPassword').textContent = wifiData.password ? '••••••••' : 'No password';
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorElement.classList.add('show');
+            
+            setTimeout(() => {
+                errorElement.classList.remove('show');
+            }, 5000);
+        }
+
+        // Setup method selection
+        window.selectSetupMethod = function(method) {
+            document.querySelectorAll('.setup-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            if (method === 'qr') {
+                document.getElementById('qrOption').classList.add('active');
+                document.getElementById('qrScannerContainer').classList.add('active');
+                document.getElementById('setupOptions').style.display = 'none';
+                initQrScanner();
+            } else if (method === 'manual') {
+                document.getElementById('manualOption').classList.add('active');
+                // Show manual setup instructions
+                alert('Manual Setup:\n1. Connect to "SmartTV-Setup" WiFi network\n2. Open browser and go to: http://192.168.4.1\n3. Enter your WiFi credentials\n4. Wait for connection to complete');
+            }
+        };
+
+        // Stop scanning
+        window.stopScanning = function() {
+            if (qrScanner) {
+                qrScanner.stop();
+                isScanning = false;
+            }
+            
+            document.getElementById('qrScannerContainer').classList.remove('active');
+            document.getElementById('setupOptions').style.display = 'flex';
+            document.getElementById('scanResult').classList.remove('show');
+            document.getElementById('connectButton').style.display = 'none';
+            
+            // Reset UI state
+            document.querySelectorAll('.setup-option').forEach(option => {
+                option.classList.remove('active');
+            });
+        };
+
+        // Connect to WiFi
+        window.connectToWifi = async function() {
+            if (!detectedWifiData) {
+                showError('No WiFi data detected. Please scan a QR code first.');
+                return;
+            }
+
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.textContent = 'Connecting...';
+            statusElement.className = 'connection-status connecting';
+
+            try {
+                // Simulate WiFi connection process
+                console.log('Connecting to WiFi:', detectedWifiData);
+                
+                // In a real implementation, this would communicate with the system
+                // to configure WiFi settings
+                await simulateWifiConnection(detectedWifiData);
+                
+                statusElement.textContent = 'Connected';
+                statusElement.className = 'connection-status connected';
+                
+                // Show success message
+                alert('✅ Successfully connected to WiFi!\n\nThe system will restart to apply the new network settings.');
+                
+                // In a real implementation, this would restart the system
+                // For demo purposes, we'll just go back to settings
+                setTimeout(() => {
+                    goBack();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('WiFi connection failed:', error);
+                statusElement.textContent = 'Connection Failed';
+                statusElement.className = 'connection-status disconnected';
+                showError('Failed to connect to WiFi. Please check the network details and try again.');
+            }
+        };
+
+        // Simulate WiFi connection (replace with actual system integration)
+        async function simulateWifiConnection(wifiData) {
+            // Simulate network connection delay
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // In a real implementation, this would:
+            // 1. Write WiFi credentials to system configuration
+            // 2. Restart network services
+            // 3. Test connection
+            // 4. Update system status
+            
+            console.log('WiFi connection simulation complete');
+        }
+
+        // Go back to settings
+        window.goBack = function() {
+            if (qrScanner) {
+                qrScanner.stop();
+            }
+            window.location.href = 'settings.html';
+        };
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (qrScanner) {
+                qrScanner.stop();
+            }
+        });
+    </script>
+    <script src="tv-remote.js"></script>
+</body>
+</html>

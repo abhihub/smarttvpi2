@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Smart Family Console</title>
+    <link rel="stylesheet" href="tv-remote.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 auto;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .settings-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .settings-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .setting-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .setting-item.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .setting-description {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .setting-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .setting-value {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-left: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(26px);
+        }
+
+        .system-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .system-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .system-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .system-info-label {
+            opacity: 0.7;
+        }
+
+        .system-info-value {
+            font-weight: 600;
+        }
+
+        .action-button {
+            background: rgba(102, 126, 234, 0.8);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .action-button:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: translateY(-1px);
+        }
+
+        .action-button.danger {
+            background: rgba(231, 76, 60, 0.8);
+        }
+
+        .action-button.danger:hover {
+            background: rgba(231, 76, 60, 1);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.connected {
+            background: #2ecc71;
+        }
+
+        .status-indicator.disconnected {
+            background: #e74c3c;
+        }
+
+        .status-indicator.connecting {
+            background: #f39c12;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" onclick="goBack()">
+                <span>←</span>
+                <span>Back to Home</span>
+            </button>
+            <h1 class="title">Settings</h1>
+            <div></div>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Network Settings -->
+            <div class="settings-section">
+                <h2>🌐 Network & Connection</h2>
+                
+                <div class="setting-item" onclick="openWifiSetup()">
+                    <div class="setting-info">
+                        <div class="setting-title">
+                            <span class="status-indicator" id="wifiStatus"></span>
+                            WiFi Setup
+                        </div>
+                        <div class="setting-description">Configure wireless network connection</div>
+                    </div>
+                    <div class="setting-value" id="wifiNetwork">Not connected</div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Remote Control</div>
+                        <div class="setting-description">Enable mobile app remote control</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleRemoteControl(this)"></div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Network Diagnostics</div>
+                        <div class="setting-description">Test network connectivity</div>
+                    </div>
+                    <button class="action-button" onclick="runNetworkTest()">Test</button>
+                </div>
+            </div>
+
+            <!-- Display & Audio -->
+            <div class="settings-section">
+                <h2>🎥 Display & Audio</h2>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Video Quality</div>
+                        <div class="setting-description">Default video call quality</div>
+                    </div>
+                    <div class="setting-value">HD 720p</div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Audio Enhancement</div>
+                        <div class="setting-description">Noise cancellation and echo reduction</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleAudioEnhancement(this)"></div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Full Screen Mode</div>
+                        <div class="setting-description">Kiosk mode for TV deployment</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleFullScreen(this)"></div>
+                </div>
+            </div>
+
+            <!-- Privacy & Security -->
+            <div class="settings-section">
+                <h2>🔒 Privacy & Security</h2>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Camera Permission</div>
+                        <div class="setting-description">Allow camera access for video calls</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleCameraPermission(this)"></div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Microphone Permission</div>
+                        <div class="setting-description">Allow microphone access for calls</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleMicrophonePermission(this)"></div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Call History</div>
+                        <div class="setting-description">Keep record of video calls</div>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleCallHistory(this)"></div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="settings-section">
+                <h2>ℹ️ System Information</h2>
+                
+                <div class="system-info">
+                    <div class="system-info-item">
+                        <span class="system-info-label">App Version:</span>
+                        <span class="system-info-value">1.0.0</span>
+                    </div>
+                    <div class="system-info-item">
+                        <span class="system-info-label">Electron Version:</span>
+                        <span class="system-info-value">28.0.0</span>
+                    </div>
+                    <div class="system-info-item">
+                        <span class="system-info-label">Platform:</span>
+                        <span class="system-info-value" id="platformInfo">Loading...</span>
+                    </div>
+                    <div class="system-info-item">
+                        <span class="system-info-label">IP Address:</span>
+                        <span class="system-info-value" id="ipAddress">Loading...</span>
+                    </div>
+                    <div class="system-info-item">
+                        <span class="system-info-label">Memory Usage:</span>
+                        <span class="system-info-value" id="memoryUsage">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">System Update</div>
+                        <div class="setting-description">Check for software updates</div>
+                    </div>
+                    <button class="action-button" onclick="checkForUpdates()">Check</button>
+                </div>
+
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-title">Reset Settings</div>
+                        <div class="setting-description">Restore default configuration</div>
+                    </div>
+                    <button class="action-button danger" onclick="resetSettings()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize settings page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSystemInfo();
+            updateWifiStatus();
+            
+            // Update system info every 5 seconds
+            setInterval(updateSystemInfo, 5000);
+        });
+
+        // Update system information
+        function updateSystemInfo() {
+            // Platform info
+            document.getElementById('platformInfo').textContent = navigator.platform;
+            
+            // Memory usage (approximate)
+            if (performance && performance.memory) {
+                const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                document.getElementById('memoryUsage').textContent = `${memoryMB} MB`;
+            } else {
+                document.getElementById('memoryUsage').textContent = 'N/A';
+            }
+            
+            // IP address (simulated for demo)
+            document.getElementById('ipAddress').textContent = '192.168.1.100';
+        }
+
+        // Update WiFi status
+        function updateWifiStatus() {
+            // Simulate WiFi status check
+            const wifiStatus = document.getElementById('wifiStatus');
+            const wifiNetwork = document.getElementById('wifiNetwork');
+            
+            // In a real implementation, this would check actual WiFi status
+            const isConnected = navigator.onLine;
+            
+            if (isConnected) {
+                wifiStatus.className = 'status-indicator connected';
+                wifiNetwork.textContent = 'Home Network'; // Example network name
+            } else {
+                wifiStatus.className = 'status-indicator disconnected';
+                wifiNetwork.textContent = 'Not connected';
+            }
+        }
+
+        // Open WiFi setup page
+        function openWifiSetup() {
+            window.location.href = 'wifi-setup.html';
+        }
+
+        // Toggle functions
+        function toggleRemoteControl(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('Remote control:', isEnabled ? 'enabled' : 'disabled');
+        }
+
+        function toggleAudioEnhancement(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('Audio enhancement:', isEnabled ? 'enabled' : 'disabled');
+        }
+
+        function toggleFullScreen(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('Full screen mode:', isEnabled ? 'enabled' : 'disabled');
+        }
+
+        function toggleCameraPermission(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('Camera permission:', isEnabled ? 'enabled' : 'disabled');
+        }
+
+        function toggleMicrophonePermission(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('Microphone permission:', isEnabled ? 'enabled' : 'disabled');
+        }
+
+        function toggleCallHistory(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('Call history:', isEnabled ? 'enabled' : 'disabled');
+        }
+
+        // Action functions
+        function runNetworkTest() {
+            alert('Network test started...\n\n✅ Internet connectivity: OK\n✅ DNS resolution: OK\n✅ Server connection: OK');
+        }
+
+        function checkForUpdates() {
+            alert('Checking for updates...\n\n✅ You are running the latest version (1.0.0)');
+        }
+
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to default?\n\nThis action cannot be undone.')) {
+                alert('Settings have been reset to default values.\n\nThe system will restart to apply changes.');
+                // In a real implementation, this would reset settings and restart
+            }
+        }
+
+        // Go back to home
+        function goBack() {
+            window.location.href = 'homepage.html';
+        }
+
+        // Update online status
+        window.addEventListener('online', updateWifiStatus);
+        window.addEventListener('offline', updateWifiStatus);
+    </script>
+    <script src="tv-remote.js"></script>
+</body>
+</html>

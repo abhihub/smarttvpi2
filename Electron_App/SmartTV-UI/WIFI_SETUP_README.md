@@ -1,0 +1,228 @@
+# WiFi Onboarding System
+
+This document explains the WiFi onboarding system implemented for the Smart TV Raspberry Pi application.
+
+## Overview
+
+The WiFi onboarding system provides two methods for users to connect their Smart TV to WiFi:
+
+1. **QR Code Scanning**: Users can point their phone's WiFi QR code at the TV camera
+2. **Soft AP Setup**: The TV creates a setup network for manual WiFi configuration
+
+## System Architecture
+
+### Components
+
+1. **WiFi Onboarding Page** (`wifi-onboarding.html`)
+   - Initial startup screen shown when WiFi is not connected
+   - Provides clear instructions and two setup options
+   - QR code scanner with camera integration
+   - Soft AP status and setup interface
+
+2. **WiFi Credentials Page** (`wifi-credentials.html`)
+   - Web interface served on the soft AP network (192.168.4.1)
+   - Network scanning and selection
+   - WiFi credential input form
+   - Connection progress tracking
+
+3. **WiFi Manager** (`wifi-manager.js`)
+   - Handles soft AP creation and management
+   - Manages WiFi connection process
+   - Network scanning and configuration
+   - System integration with hostapd and wpa_supplicant
+
+4. **Updated Main Process** (`main.js`)
+   - Checks WiFi status on startup
+   - Loads appropriate page based on connection state
+   - Integrates WiFi manager with Electron app
+
+## WiFi Setup Flow
+
+### Method 1: QR Code Scanning
+
+1. **User Action**: Click "QR Code Scan" on the onboarding screen
+2. **Camera Activation**: TV camera starts scanning for QR codes
+3. **QR Code Detection**: User points phone's WiFi QR code at TV
+4. **Credential Parsing**: System extracts SSID, password, and security type
+5. **Connection Process**: TV connects to the detected network
+6. **Success**: TV proceeds to main application
+
+### Method 2: Soft AP Setup
+
+1. **User Action**: Click "Setup Network" on the onboarding screen
+2. **AP Creation**: TV creates "SmartTV-Setup" WiFi network
+3. **User Connection**: User connects phone to setup network
+4. **Web Interface**: User accesses http://192.168.4.1 or scans QR code
+5. **Network Selection**: User selects home WiFi and enters password
+6. **Connection Process**: TV connects to home network and stops AP
+7. **Success**: TV proceeds to main application
+
+## Technical Implementation
+
+### QR Code Format
+
+The system supports standard WiFi QR codes:
+```
+WIFI:T:WPA;S:NetworkName;P:Password;H:false;;
+```
+
+Where:
+- `T`: Security type (WPA, WEP, or nopass)
+- `S`: Network SSID
+- `P`: Network password
+- `H`: Hidden network (true/false)
+
+### Soft AP Configuration
+
+- **Network Name**: SmartTV-Setup
+- **IP Address**: 192.168.4.1
+- **Security**: Open (no password required)
+- **DHCP Range**: 192.168.4.2 - 192.168.4.20
+
+### System Dependencies
+
+For Raspberry Pi deployment:
+- `hostapd`: WiFi access point daemon
+- `dnsmasq`: DHCP server
+- `wpa_supplicant`: WiFi client connection
+- `iwconfig`/`iwlist`: Network interface tools
+
+## Development vs Production
+
+### Development Mode (Laptop Testing)
+
+- WiFi checking is bypassed (simulated as connected)
+- QR code scanning works with laptop camera
+- Soft AP functionality is simulated
+- All UI components work for testing
+
+### Production Mode (Raspberry Pi)
+
+- Real WiFi status checking
+- Actual soft AP creation with hostapd
+- System-level network configuration
+- Hardware camera integration
+
+## Testing Instructions
+
+### 1. Test QR Code Generation
+
+1. Open `test-qr-wifi.html` in a browser
+2. Enter WiFi credentials (SSID, password, security type)
+3. Generate QR code
+4. Save or display the QR code for testing
+
+### 2. Test on Laptop
+
+1. Start the Electron app:
+   ```bash
+   ./node_modules/.bin/electron . --no-sandbox --dev
+   ```
+
+2. The app should show the homepage (development mode)
+
+3. To test WiFi onboarding, temporarily modify the development check:
+   ```javascript
+   // In main.js, comment out the development check
+   // if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
+   //     return true;
+   // }
+   ```
+
+4. Restart the app - it should show the WiFi onboarding screen
+
+### 3. Test QR Code Scanning
+
+1. Navigate to the QR code scanner
+2. Point laptop camera at the generated QR code
+3. Verify the WiFi credentials are detected and displayed
+4. Click "Connect to WiFi" to test the connection process
+
+### 4. Test Soft AP Setup
+
+1. Navigate to the soft AP setup
+2. Verify the setup network status is displayed
+3. Check that the QR code is generated for the setup URL
+4. Test the web interface by opening `wifi-credentials.html`
+
+## Raspberry Pi Deployment
+
+### Prerequisites
+
+Install required packages:
+```bash
+sudo apt-get update
+sudo apt-get install hostapd dnsmasq
+```
+
+### Configuration Files
+
+The system automatically creates:
+- `/tmp/hostapd.conf`: Access point configuration
+- `/tmp/dnsmasq.conf`: DHCP server configuration
+- `/etc/wpa_supplicant/wpa_supplicant.conf`: WiFi client configuration
+
+### Permissions
+
+Ensure the application has sudo access for network operations:
+```bash
+# Add to /etc/sudoers (use visudo)
+pi ALL=(ALL) NOPASSWD: /usr/sbin/hostapd, /usr/sbin/dnsmasq, /sbin/ip, /usr/sbin/iwconfig, /usr/sbin/iwlist
+```
+
+### Auto-start
+
+Configure the application to start on boot:
+```bash
+# Add to /etc/rc.local or create systemd service
+cd /path/to/SmartTV-UI
+./node_modules/.bin/electron . --no-sandbox --kiosk
+```
+
+## Mobile App Integration
+
+The mobile app works seamlessly with the WiFi onboarding system:
+
+1. **Initial Setup**: Mobile app shows instructions to complete WiFi setup first
+2. **Connection Discovery**: App can scan for SmartTV devices on the network
+3. **Remote Control**: Once WiFi is connected, mobile app provides full remote control
+4. **Fallback**: If WiFi connection is lost, system returns to onboarding mode
+
+## Security Considerations
+
+1. **Soft AP Security**: Setup network is open but only active during setup
+2. **Credential Handling**: WiFi passwords are handled securely and not logged
+3. **Network Isolation**: Setup network is isolated from main network
+4. **Automatic Cleanup**: Soft AP is automatically disabled after successful connection
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Camera Access**: Ensure camera permissions are granted
+2. **QR Code Detection**: Verify QR code format is correct
+3. **Network Conflicts**: Check for conflicting network configurations
+4. **Permission Errors**: Verify sudo access for network operations
+
+### Debug Mode
+
+Enable debug logging:
+```bash
+DEBUG=wifi-manager ./node_modules/.bin/electron . --no-sandbox
+```
+
+### Reset Network Configuration
+
+```bash
+# Reset to factory WiFi settings
+sudo rm /etc/wpa_supplicant/wpa_supplicant.conf
+sudo systemctl restart wpa_supplicant
+```
+
+## Future Enhancements
+
+- **WPS Support**: Add WiFi Protected Setup support
+- **Enterprise Networks**: Support for WPA Enterprise
+- **Bluetooth Setup**: Alternative setup method via Bluetooth
+- **Captive Portal**: Automatic captive portal detection
+- **Multiple Networks**: Support for multiple saved networks

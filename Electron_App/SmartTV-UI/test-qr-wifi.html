@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi QR Code Generator - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .qr-result {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .qr-code {
+            margin: 20px 0;
+        }
+        .qr-text {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WiFi QR Code Generator</h1>
+        
+        <div class="instructions">
+            <h3>📱 Test Instructions</h3>
+            <p>1. Fill in your WiFi network details below</p>
+            <p>2. Click "Generate QR Code" to create a WiFi QR code</p>
+            <p>3. Open the Electron app and navigate to Settings → WiFi Setup</p>
+            <p>4. Choose "QR Code Scan" and point the camera at the generated QR code</p>
+            <p>5. The app should detect and parse the WiFi credentials</p>
+        </div>
+
+        <form id="wifiForm">
+            <div class="form-group">
+                <label for="ssid">Network Name (SSID):</label>
+                <input type="text" id="ssid" name="ssid" value="TestNetwork" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" value="test123456" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="security">Security Type:</label>
+                <select id="security" name="security">
+                    <option value="WPA">WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">Open (No Password)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="hidden" name="hidden"> Hidden Network
+                </label>
+            </div>
+            
+            <button type="submit">Generate WiFi QR Code</button>
+        </form>
+        
+        <div id="qrResult" class="qr-result" style="display: none;">
+            <h3>Generated WiFi QR Code</h3>
+            <div id="qrCode" class="qr-code"></div>
+            <div class="qr-text">
+                <strong>QR Code Text:</strong><br>
+                <span id="qrText"></span>
+            </div>
+            <p><strong>Instructions:</strong> Use this QR code to test the WiFi setup feature in the Electron app.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        document.getElementById('wifiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const ssid = document.getElementById('ssid').value;
+            const password = document.getElementById('password').value;
+            const security = document.getElementById('security').value;
+            const hidden = document.getElementById('hidden').checked;
+            
+            // Generate WiFi QR code text
+            // Format: WIFI:T:WPA;S:NetworkName;P:Password;H:false;;
+            let qrText = `WIFI:T:${security};S:${ssid};P:${password};H:${hidden};;`;
+            
+            // Display QR text
+            document.getElementById('qrText').textContent = qrText;
+            
+            // Generate QR code
+            const qrCodeElement = document.getElementById('qrCode');
+            qrCodeElement.innerHTML = '';
+            
+            QRCode.toCanvas(qrCodeElement, qrText, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function(error) {
+                if (error) {
+                    console.error('Error generating QR code:', error);
+                    qrCodeElement.innerHTML = '<p style="color: red;">Error generating QR code</p>';
+                } else {
+                    console.log('QR code generated successfully');
+                    document.getElementById('qrResult').style.display = 'block';
+                }
+            });
+        });
+        
+        // Generate default QR code on page load
+        window.addEventListener('load', function() {
+            document.getElementById('wifiForm').dispatchEvent(new Event('submit'));
+        });
+    </script>
+</body>
+</html>
