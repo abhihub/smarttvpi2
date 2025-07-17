@@ -336,7 +336,21 @@ class TVRemoteController {
         setTimeout(() => element.classList.remove('pulse'), 600);
         
         // Try different activation methods in order of preference
-        if (element.tagName === 'BUTTON') {
+        if (element.tagName === 'INPUT') {
+            // Input field - trigger mobile app text input
+            console.log('🎮 Activating input field for mobile text input');
+            const fieldName = element.getAttribute('data-field') || element.name || element.id || 'general';
+            const currentValue = element.value || element.placeholder || '';
+            
+            // Request text input through electronAPI
+            if (window.electronAPI && window.electronAPI.requestTextInput) {
+                console.log('🎮 Requesting text input via electronAPI for field:', fieldName);
+                window.electronAPI.requestTextInput(fieldName, currentValue);
+            } else {
+                console.log('🎮 electronAPI not available, focusing input element');
+                element.focus();
+            }
+        } else if (element.tagName === 'BUTTON') {
             // Direct button click
             console.log('🎮 Clicking button');
             element.click();
@@ -413,19 +427,6 @@ class TVRemoteController {
         this.gridColumns = columns;
         console.log(`🎮 Grid columns set to: ${columns}`);
     }
-}
-
-// Global instance
-window.tvRemote = new TVRemoteController();
-
-// Auto-refresh when page content changes
-const observer = new MutationObserver(() => {
-    if (window.tvRemote) {
-        clearTimeout(window.tvRemote.refreshTimeout);
-        window.tvRemote.refreshTimeout = setTimeout(() => {
-            window.tvRemote.scanFocusableElements();
-        }, 500);
-    }
     
     getActionByKeyCode(keyCode) {
         return this.keyCodeMappings[keyCode];
@@ -468,6 +469,19 @@ const observer = new MutationObserver(() => {
         if (gamepad.axes[0] > 0.5) this.handleAction('right');
         if (gamepad.axes[1] < -0.5) this.handleAction('up');
         if (gamepad.axes[1] > 0.5) this.handleAction('down');
+    }
+}
+
+// Global instance
+window.tvRemote = new TVRemoteController();
+
+// Auto-refresh when page content changes
+const observer = new MutationObserver(() => {
+    if (window.tvRemote) {
+        clearTimeout(window.tvRemote.refreshTimeout);
+        window.tvRemote.refreshTimeout = setTimeout(() => {
+            window.tvRemote.scanFocusableElements();
+        }, 500);
     }
 });
 

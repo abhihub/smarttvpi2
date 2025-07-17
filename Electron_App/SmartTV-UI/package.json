@@ -7,7 +7,7 @@
   "license": "MIT",
   "homepage": "https://your-website.com",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron-forge start -- --no-sandbox",
     "dev": "electron . --dev",
     "dist": "npm run build:linux",
     "package": "electron-forge package",

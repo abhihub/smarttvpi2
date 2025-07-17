@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Dimensions, Modal, ScrollView, KeyboardAvoidingView, Platform, BackHandler } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { BarCodeScanner } from 'expo-barcode-scanner';
@@ -13,7 +13,7 @@ interface WebSocketMessage {
   [key: string]: any;
 }
 
-type AppState = 'homepage' | 'video-call-joining' | 'video-call-active' | 'gamepage' | 'other';
+type AppState = 'homepage' | 'video-call-joining' | 'video-call-active' | 'gamepage' | 'settings' | 'other';
 type VideoCallState = 'joining' | 'active' | 'disconnected';
 
 
@@ -31,9 +31,15 @@ export default function App() {
   const [showTextInput, setShowTextInput] = useState(false);
   const [textInputMode, setTextInputMode] = useState<'username' | 'roomname' | 'general'>('general');
   const [inputText, setInputText] = useState('');
+  const [showInitialInstructions, setShowInitialInstructions] = useState(true);
+  const [isAutoDiscovering, setIsAutoDiscovering] = useState(false);
   
   // Connection type
   const [connectionType, setConnectionType] = useState<ConnectionType>('wifi');
+  
+  // Hardware navigation state
+  const [currentFocusedElement, setCurrentFocusedElement] = useState<string>('auto-connect');
+  const [isNavigating, setIsNavigating] = useState(false);
   
   // App state mirroring
   const [currentAppState, setCurrentAppState] = useState<AppState>('homepage');
@@ -57,8 +63,284 @@ export default function App() {
     };
   }, [connectionType]);
 
+  // Hardware key event handler
+  useEffect(() => {
+    const handleHardwareKey = (event: any) => {
+      console.log('Hardware key event:', event);
+      
+      // Only handle hardware keys if we're connected to TV
+      if (!isConnected) {
+        return false;
+      }
+      
+      // Handle different key events
+      switch (event.keyCode) {
+        case 19: // KEYCODE_DPAD_UP
+          handleNavigate('up');
+          return true;
+        case 20: // KEYCODE_DPAD_DOWN
+          handleNavigate('down');
+          return true;
+        case 21: // KEYCODE_DPAD_LEFT
+          handleNavigate('left');
+          return true;
+        case 22: // KEYCODE_DPAD_RIGHT
+          handleNavigate('right');
+          return true;
+        case 23: // KEYCODE_DPAD_CENTER (OK/Select)
+        case 66: // KEYCODE_ENTER
+          handleSelect();
+          return true;
+        case 4: // KEYCODE_BACK
+          handleBack();
+          return true;
+        case 67: // KEYCODE_DEL (Backspace)
+        case 62: // KEYCODE_SPACE
+        case 56: // KEYCODE_PERIOD
+          handleSpecialKey(event.keyCode);
+          return true;
+        default:
+          // Handle numeric keypad input
+          if (event.keyCode >= 7 && event.keyCode <= 16) {
+            const digit = (event.keyCode - 7).toString();
+            handleKeypadInput(digit);
+            return true;
+          }
+          // Handle letter keys for text input (A-Z)
+          if (event.keyCode >= 29 && event.keyCode <= 54) {
+            if (showTextInput) {
+              const letter = String.fromCharCode(event.keyCode - 29 + 65);
+              setInputText(prev => prev + letter.toLowerCase());
+              return true;
+            }
+          }
+          return false;
+      }
+    };
+
+    // Add hardware key listener for Android
+    if (Platform.OS === 'android') {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+        handleBack();
+        return true;
+      });
+      
+      // Note: React Native doesn't have built-in support for all hardware keys
+      // This would typically require a native module for full Android TV remote support
+      // For now, we'll focus on the back button which is supported
+      
+      return () => {
+        backHandler.remove();
+      };
+    }
+  }, [currentFocusedElement, isConnected, showTextInput, currentAppState]);
+
+  const handleNavigate = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    
+    console.log('📱 Navigation command:', direction, 'Connected:', isConnected);
+    
+    if (isConnected) {
+      // Send navigation command to TV
+      console.log('📱 Sending navigation command to TV:', direction);
+      sendCommand({ type: 'navigate', direction });
+    } else {
+      // Handle navigation within the mobile app UI
+      console.log('📱 Handling local navigation:', direction);
+      handleLocalNavigation(direction);
+    }
+    
+    setTimeout(() => setIsNavigating(false), 100);
+  };
+
+  const handleSelect = () => {
+    console.log('📱 Select command, Connected:', isConnected);
+    
+    if (isConnected) {
+      // Send select command to TV
+      console.log('📱 Sending select command to TV');
+      sendCommand({ type: 'select' });
+    } else {
+      // Handle local selection
+      console.log('📱 Handling local selection');
+      handleLocalSelect();
+    }
+  };
+
+  const handleBack = () => {
+    if (showTextInput) {
+      setShowTextInput(false);
+    } else if (isConnected) {
+      sendCommand({ type: 'back' });
+    } else {
+      // Handle local back action
+      if (showSetup) {
+        setShowSetup(false);
+      } else if (showInitialInstructions) {
+        setShowInitialInstructions(false);
+      }
+    }
+  };
+
+  const handleKeypadInput = (digit: string) => {
+    if (showTextInput) {
+      setInputText(prev => prev + digit);
+    } else if (!isConnected && currentFocusedElement === 'tv-ip-input') {
+      // Input IP address digits when IP field is focused
+      const currentIP = tvIP;
+      if (currentIP.length < 15) { // Basic IP length check
+        setTvIP(prev => prev + digit);
+      }
+    }
+  };
+
+  // Handle special keys for text input
+  const handleSpecialKey = (keyCode: number) => {
+    if (showTextInput) {
+      switch (keyCode) {
+        case 67: // KEYCODE_DEL (Backspace)
+          setInputText(prev => prev.slice(0, -1));
+          break;
+        case 62: // KEYCODE_SPACE
+          setInputText(prev => prev + ' ');
+          break;
+        case 56: // KEYCODE_PERIOD
+          setInputText(prev => prev + '.');
+          break;
+      }
+    } else if (!isConnected && currentFocusedElement === 'tv-ip-input') {
+      switch (keyCode) {
+        case 67: // KEYCODE_DEL (Backspace)
+          setTvIP(prev => prev.slice(0, -1));
+          break;
+        case 56: // KEYCODE_PERIOD
+          setTvIP(prev => prev + '.');
+          break;
+      }
+    }
+  };
+
+  const handleLocalNavigation = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (!isConnected) {
+      // Define navigation elements in connection screen
+      const connectionElements = ['tv-ip-input', 'auto-connect', 'manual-connect', 'wifi-setup'];
+      const currentIndex = connectionElements.indexOf(currentFocusedElement);
+      
+      let newIndex = currentIndex;
+      if (direction === 'up' && currentIndex > 0) {
+        newIndex = currentIndex - 1;
+      } else if (direction === 'down' && currentIndex < connectionElements.length - 1) {
+        newIndex = currentIndex + 1;
+      }
+      
+      setCurrentFocusedElement(connectionElements[newIndex]);
+    }
+  };
+
+  const handleLocalSelect = () => {
+    if (!isConnected) {
+      switch (currentFocusedElement) {
+        case 'tv-ip-input':
+          // Focus on IP input - would need to handle text input
+          break;
+        case 'auto-connect':
+          setIsAutoDiscovering(true);
+          connectToTV();
+          break;
+        case 'manual-connect':
+          setIsAutoDiscovering(false);
+          connectToTV();
+          break;
+        case 'wifi-setup':
+          startSetup();
+          break;
+      }
+    }
+  };
+
   const connectToTV = async () => {
-    return connectViaWiFi();
+    if (isAutoDiscovering) {
+      await discoverTVIP();
+    } else {
+      return connectViaWiFi();
+    }
+  };
+
+  const discoverTVIP = async () => {
+    setIsConnecting(true);
+    setConnectionStatus('Discovering TV...');
+    
+    try {
+      // Get current network info to determine subnet
+      const netState = await NetInfo.fetch();
+      console.log('Network state for discovery:', netState);
+      
+      // Common IP ranges for home networks
+      const commonIPs = [
+        '10.81.110.20', // Your actual IP
+        '192.168.1.100', '192.168.1.101', '192.168.1.102', '192.168.1.103',
+        '192.168.0.100', '192.168.0.101', '192.168.0.102', '192.168.0.103',
+        '10.0.0.100', '10.0.0.101', '10.0.0.102', '10.0.0.103',
+        '172.16.0.100', '172.16.0.101', '172.16.0.102'
+      ];
+      
+      console.log('Starting IP discovery with IPs:', commonIPs);
+      
+      for (const ip of commonIPs) {
+        try {
+          setConnectionStatus(`Trying ${ip}...`);
+          console.log(`Testing IP: ${ip}`);
+          
+          const websocketUrl = `ws://${ip}:8080`;
+          const testWs = new WebSocket(websocketUrl);
+          
+          const testResult = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              testWs.close();
+              reject(new Error('Timeout'));
+            }, 3000); // Increased timeout
+            
+            testWs.onopen = () => {
+              console.log(`Successfully connected to ${ip}`);
+              clearTimeout(timeout);
+              testWs.close();
+              resolve(ip);
+            };
+            
+            testWs.onerror = (error) => {
+              console.log(`Connection failed to ${ip}:`, error);
+              clearTimeout(timeout);
+              reject(new Error('Connection failed'));
+            };
+          });
+          
+          // If we get here, we found a working IP
+          console.log(`Found working IP: ${testResult}`);
+          setTvIP(testResult as string);
+          setConnectionStatus('TV discovered!');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          return await connectViaWiFi();
+        } catch (error) {
+          console.log(`Failed to connect to ${ip}:`, error);
+          // Continue to next IP
+          continue;
+        }
+      }
+      
+      // If no IP found, fall back to manual entry
+      setIsConnecting(false);
+      setConnectionStatus('TV not found automatically');
+      Alert.alert(
+        'TV Not Found', 
+        'Could not automatically discover TV. Please enter the IP address manually or check that:\n\n• TV is powered on and connected to WiFi\n• Phone and TV are on the same network\n• SmartTV app is running on the TV'
+      );
+    } catch (error) {
+      console.error('Discovery error:', error);
+      setIsConnecting(false);
+      setConnectionStatus('Discovery failed');
+      Alert.alert('Discovery Failed', 'Could not scan for TV. Please try manual connection.');
+    }
   };
 
   const connectViaWiFi = async () => {
@@ -118,6 +400,8 @@ export default function App() {
             handleAppStateChange(data);
           } else if (data.type === 'videoCallUpdate') {
             handleVideoCallUpdate(data);
+          } else if (data.type === 'showTextInput') {
+            handleShowTextInput(data);
           }
         } catch (error) {
           console.error('Error parsing message:', error);
@@ -132,7 +416,7 @@ export default function App() {
         setIsConnected(false);
         setConnectionStatus('Connection failed');
         Alert.alert('Connection Failed', 
-          `Could not connect to SmartTV at ${tvIP}:8080.\n\nError: ${error.message || 'Unknown error'}\n\nPlease check:\n• TV is powered on\n• TV and phone are on same WiFi\n• IP address is correct\n• TV app is running`
+          `Could not connect to SmartTV at ${tvIP}:8080.\n\nError: ${(error as any).message || 'Unknown error'}\n\nPlease check:\n• TV is powered on\n• TV and phone are on same WiFi\n• IP address is correct\n• TV app is running`
         );
       };
 
@@ -183,6 +467,9 @@ export default function App() {
     } else if (data.currentApp === 'gamepage') {
       setCurrentAppState('gamepage');
       setVideoCallState('disconnected');
+    } else if (data.currentApp === 'settings') {
+      setCurrentAppState('settings');
+      setVideoCallState('disconnected');
     } else {
       setCurrentAppState('other');
       setVideoCallState('disconnected');
@@ -216,6 +503,25 @@ export default function App() {
     }));
   };
 
+  const handleShowTextInput = (data: any) => {
+    console.log('Show text input request:', data);
+    
+    // Set the appropriate input mode based on the field
+    if (data.field === 'userName') {
+      setTextInputMode('username');
+    } else if (data.field === 'roomName') {
+      setTextInputMode('roomname');
+    } else {
+      setTextInputMode('general');
+    }
+    
+    // Set the current value as the input text
+    setInputText(data.currentValue || data.placeholder || '');
+    
+    // Show the text input modal
+    setShowTextInput(true);
+  };
+
   const disconnectFromTV = async () => {
     if (ws.current) {
       ws.current.close(1000, 'User disconnected');
@@ -229,20 +535,33 @@ export default function App() {
   };
 
   const sendCommand = async (command: any) => {
+    console.log('📱 Attempting to send command:', command);
+    
     if (!isConnected) {
+      console.log('📱 Not connected to TV, cannot send command');
       Alert.alert('Not Connected', 'Please connect to TV first');
       return;
     }
 
     try {
-      if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+      if (!ws.current) {
+        console.log('📱 WebSocket not available');
         Alert.alert('WiFi Connection Error', 'WebSocket connection is not available');
         return;
       }
-      ws.current.send(JSON.stringify(command));
-      console.log('Sent WiFi command:', command);
+      
+      if (ws.current.readyState !== WebSocket.OPEN) {
+        console.log('📱 WebSocket not open, state:', ws.current.readyState);
+        Alert.alert('WiFi Connection Error', 'WebSocket connection is not open');
+        return;
+      }
+      
+      const commandString = JSON.stringify(command);
+      console.log('📱 Sending command via WebSocket:', commandString);
+      ws.current.send(commandString);
+      console.log('📱 Command sent successfully');
     } catch (error) {
-      console.error('Error sending command:', error);
+      console.error('📱 Error sending command:', error);
       Alert.alert('Command Failed', 'Failed to send command via WiFi');
     }
   };
@@ -472,9 +791,9 @@ export default function App() {
     </Modal>
   );
 
-  // Instructions Modal
-  const renderInstructionsModal = () => (
-    <Modal visible={showInstructions} transparent animationType="fade">
+  // Initial Instructions Modal
+  const renderInitialInstructionsModal = () => (
+    <Modal visible={showInitialInstructions} transparent animationType="fade">
       <View style={styles.instructionsModalContainer}>
         <View style={styles.instructionsModalContent}>
           <Text style={styles.instructionsTitle}>📱 SmartTV Remote Setup</Text>
@@ -482,21 +801,28 @@ export default function App() {
           <View style={styles.instructionsStep}>
             <Text style={styles.instructionsStepNumber}>1</Text>
             <Text style={styles.instructionsStepText}>
-              Make sure your Raspberry Pi is powered on and running the SmartTV software
+              <Text style={styles.boldText}>First Time Setup:</Text> If this is your first time, your Raspberry Pi will create a WiFi hotspot called "SmartTV-Setup". Connect to it and follow the setup instructions.
             </Text>
           </View>
           
           <View style={styles.instructionsStep}>
             <Text style={styles.instructionsStepNumber}>2</Text>
             <Text style={styles.instructionsStepText}>
-              If this is first setup, use WiFi Setup to connect Pi to your network
+              <Text style={styles.boldText}>WiFi QR Code:</Text> Alternatively, you can scan your home WiFi QR code (from your phone's WiFi settings) using the Pi's camera.
             </Text>
           </View>
           
           <View style={styles.instructionsStep}>
             <Text style={styles.instructionsStepNumber}>3</Text>
             <Text style={styles.instructionsStepText}>
-              Enter the IP address shown on your TV screen and connect
+              <Text style={styles.boldText}>Auto-Connect:</Text> Once both devices are on the same WiFi network, use Auto-Connect to automatically find and connect to your SmartTV.
+            </Text>
+          </View>
+          
+          <View style={styles.instructionsStep}>
+            <Text style={styles.instructionsStepNumber}>4</Text>
+            <Text style={styles.instructionsStepText}>
+              <Text style={styles.boldText}>Manual Connect:</Text> If auto-connect fails, you can manually enter the IP address shown on your TV screen.
             </Text>
           </View>
           
@@ -504,7 +830,7 @@ export default function App() {
             <TouchableOpacity 
               style={styles.instructionsSetupBtn}
               onPress={() => {
-                dismissInstructions();
+                setShowInitialInstructions(false);
                 startSetup();
               }}
             >
@@ -513,9 +839,9 @@ export default function App() {
             
             <TouchableOpacity 
               style={styles.instructionsContinueBtn}
-              onPress={dismissInstructions}
+              onPress={() => setShowInitialInstructions(false)}
             >
-              <Text style={styles.instructionsContinueBtnText}>Continue</Text>
+              <Text style={styles.instructionsContinueBtnText}>Got it!</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -680,6 +1006,236 @@ export default function App() {
     </View>
   );
 
+  // Settings Remote Control Screen
+  const renderSettingsRemoteControl = () => (
+    <ScrollView style={styles.remoteContainer} showsVerticalScrollIndicator={false}>
+      <StatusBar style="light" backgroundColor="#0f0f23" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Settings Remote</Text>
+          <TouchableOpacity 
+            style={styles.headerBackBtn}
+            onPress={() => sendCommand({ type: 'back' })}
+          >
+            <Text style={styles.headerBackText}>← Back</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.ipText}>{tvIP}:8080</Text>
+      </View>
+
+      {/* Navigation Pad */}
+      <View style={styles.navSection}>
+        <Text style={styles.sectionTitle}>Navigation</Text>
+        <View style={styles.navigationPad}>
+          <TouchableOpacity
+            style={[styles.navBtn, styles.navBtnUp]}
+            onPress={() => sendCommand({ type: 'navigate', direction: 'up' })}
+          >
+            <Text style={styles.navIcon}>▲</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.navMiddleRow}>
+            <TouchableOpacity
+              style={[styles.navBtn, styles.navBtnSide]}
+              onPress={() => sendCommand({ type: 'navigate', direction: 'left' })}
+            >
+              <Text style={styles.navIcon}>◀</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.navBtn, styles.selectBtn]}
+              onPress={() => sendCommand({ type: 'select' })}
+            >
+              <Text style={styles.selectText}>OK</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.navBtn, styles.navBtnSide]}
+              onPress={() => sendCommand({ type: 'navigate', direction: 'right' })}
+            >
+              <Text style={styles.navIcon}>▶</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity
+            style={[styles.navBtn, styles.navBtnDown]}
+            onPress={() => sendCommand({ type: 'navigate', direction: 'down' })}
+          >
+            <Text style={styles.navIcon}>▼</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Settings Quick Actions */}
+      <View style={styles.appSection}>
+        <Text style={styles.sectionTitle}>Settings Options</Text>
+        <View style={styles.appGrid}>
+          <TouchableOpacity 
+            style={[styles.appCard, styles.settingsCard]} 
+            onPress={() => sendCommand({ type: 'settings', action: 'wifi' })}
+          >
+            <Text style={styles.appIcon}>🌐</Text>
+            <Text style={styles.appTitle}>WiFi Setup</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.settingsCard]} 
+            onPress={() => sendCommand({ type: 'settings', action: 'display' })}
+          >
+            <Text style={styles.appIcon}>🎥</Text>
+            <Text style={styles.appTitle}>Display</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.settingsCard]} 
+            onPress={() => sendCommand({ type: 'settings', action: 'audio' })}
+          >
+            <Text style={styles.appIcon}>🔊</Text>
+            <Text style={styles.appTitle}>Audio</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.settingsCard]} 
+            onPress={() => sendCommand({ type: 'settings', action: 'system' })}
+          >
+            <Text style={styles.appIcon}>ℹ️</Text>
+            <Text style={styles.appTitle}>System Info</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Home Button */}
+      <View style={styles.quickActions}>
+        <TouchableOpacity 
+          style={[styles.quickBtn, styles.homeBtn]} 
+          onPress={() => sendCommand({ type: 'launch', app: 'homepage' })}
+        >
+          <Text style={styles.quickBtnIcon}>🏠</Text>
+          <Text style={styles.quickBtnText}>Home</Text>
+        </TouchableOpacity>
+      </View>
+
+      {renderTextInputModal()}
+    </ScrollView>
+  );
+
+  // Games Remote Control Screen
+  const renderGamesRemoteControl = () => (
+    <ScrollView style={styles.remoteContainer} showsVerticalScrollIndicator={false}>
+      <StatusBar style="light" backgroundColor="#0f0f23" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Games Remote</Text>
+          <TouchableOpacity 
+            style={styles.headerBackBtn}
+            onPress={() => sendCommand({ type: 'back' })}
+          >
+            <Text style={styles.headerBackText}>← Back</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.ipText}>{tvIP}:8080</Text>
+      </View>
+
+      {/* Navigation Pad */}
+      <View style={styles.navSection}>
+        <Text style={styles.sectionTitle}>Navigation</Text>
+        <View style={styles.navigationPad}>
+          <TouchableOpacity
+            style={[styles.navBtn, styles.navBtnUp]}
+            onPress={() => sendCommand({ type: 'navigate', direction: 'up' })}
+          >
+            <Text style={styles.navIcon}>▲</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.navMiddleRow}>
+            <TouchableOpacity
+              style={[styles.navBtn, styles.navBtnSide]}
+              onPress={() => sendCommand({ type: 'navigate', direction: 'left' })}
+            >
+              <Text style={styles.navIcon}>◀</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.navBtn, styles.selectBtn]}
+              onPress={() => sendCommand({ type: 'select' })}
+            >
+              <Text style={styles.selectText}>OK</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.navBtn, styles.navBtnSide]}
+              onPress={() => sendCommand({ type: 'navigate', direction: 'right' })}
+            >
+              <Text style={styles.navIcon}>▶</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity
+            style={[styles.navBtn, styles.navBtnDown]}
+            onPress={() => sendCommand({ type: 'navigate', direction: 'down' })}
+          >
+            <Text style={styles.navIcon}>▼</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Game Actions */}
+      <View style={styles.appSection}>
+        <Text style={styles.sectionTitle}>Game Options</Text>
+        <View style={styles.appGrid}>
+          <TouchableOpacity 
+            style={[styles.appCard, styles.gamesCard]} 
+            onPress={() => sendCommand({ type: 'launch', app: 'trivia-game' })}
+          >
+            <Text style={styles.appIcon}>🧠</Text>
+            <Text style={styles.appTitle}>Trivia Time</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.gamesCard]} 
+            onPress={() => sendCommand({ type: 'game', action: 'new' })}
+          >
+            <Text style={styles.appIcon}>🎮</Text>
+            <Text style={styles.appTitle}>New Game</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.gamesCard]} 
+            onPress={() => sendCommand({ type: 'game', action: 'scores' })}
+          >
+            <Text style={styles.appIcon}>🏆</Text>
+            <Text style={styles.appTitle}>Scores</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.gamesCard]} 
+            onPress={() => sendCommand({ type: 'game', action: 'settings' })}
+          >
+            <Text style={styles.appIcon}>⚙️</Text>
+            <Text style={styles.appTitle}>Game Settings</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Home Button */}
+      <View style={styles.quickActions}>
+        <TouchableOpacity 
+          style={[styles.quickBtn, styles.homeBtn]} 
+          onPress={() => sendCommand({ type: 'launch', app: 'homepage' })}
+        >
+          <Text style={styles.quickBtnIcon}>🏠</Text>
+          <Text style={styles.quickBtnText}>Home</Text>
+        </TouchableOpacity>
+      </View>
+
+      {renderTextInputModal()}
+    </ScrollView>
+  );
+
   // Regular Remote Control Screen
   const renderRemoteControl = () => (
     <ScrollView style={styles.remoteContainer} showsVerticalScrollIndicator={false}>
@@ -778,30 +1334,35 @@ export default function App() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.appCard, styles.gamesCard, styles.comingSoonCard]} 
-            onPress={() => Alert.alert('Coming Soon', 'Games Hub will be available in a future update!')}
+            style={[styles.appCard, styles.gamesCard]} 
+            onPress={() => sendCommand({ type: 'launch', app: 'gamepage' })}
           >
-            <Text style={[styles.appIcon, styles.comingSoonIcon]}>🎮</Text>
+            <Text style={styles.appIcon}>🎮</Text>
             <Text style={styles.appTitle}>Games</Text>
-            <Text style={styles.comingSoonLabel}>Coming Soon</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.appCard, styles.streamingCard, styles.comingSoonCard]} 
-            onPress={() => Alert.alert('Coming Soon', 'Streaming will be available in a future update!')}
+            style={[styles.appCard, styles.streamingCard]} 
+            onPress={() => sendCommand({ type: 'launch', app: 'streaming' })}
           >
-            <Text style={[styles.appIcon, styles.comingSoonIcon]}>🎬</Text>
+            <Text style={styles.appIcon}>🎬</Text>
             <Text style={styles.appTitle}>Streaming</Text>
-            <Text style={styles.comingSoonLabel}>Coming Soon</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.appCard, styles.photosCard, styles.comingSoonCard]} 
-            onPress={() => Alert.alert('Coming Soon', 'Photo Gallery will be available in a future update!')}
+            style={[styles.appCard, styles.photosCard]} 
+            onPress={() => sendCommand({ type: 'launch', app: 'photos' })}
           >
-            <Text style={[styles.appIcon, styles.comingSoonIcon]}>📸</Text>
+            <Text style={styles.appIcon}>📸</Text>
             <Text style={styles.appTitle}>Photos</Text>
-            <Text style={styles.comingSoonLabel}>Coming Soon</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.appCard, styles.settingsCard]} 
+            onPress={() => sendCommand({ type: 'launch', app: 'settings' })}
+          >
+            <Text style={styles.appIcon}>⚙️</Text>
+            <Text style={styles.appTitle}>Settings</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -855,7 +1416,11 @@ export default function App() {
         <View style={styles.connectForm}>
           <Text style={styles.inputLabel}>TV IP Address</Text>
           <TextInput
-            style={[styles.input, !isConnecting ? styles.inputEnabled : styles.inputDisabled]}
+            style={[
+              styles.input, 
+              !isConnecting ? styles.inputEnabled : styles.inputDisabled,
+              currentFocusedElement === 'tv-ip-input' && styles.focusedElement
+            ]}
             value={tvIP}
             onChangeText={setTvIP}
             placeholder="192.168.1.100"
@@ -870,13 +1435,34 @@ export default function App() {
         <TouchableOpacity 
           style={[
             styles.connectBtn, 
-            isConnecting && styles.connectBtnDisabled
+            { marginBottom: 15 },
+            currentFocusedElement === 'auto-connect' && styles.focusedElement
           ]} 
-          onPress={connectToTV}
+          onPress={() => {
+            setIsAutoDiscovering(true);
+            connectToTV();
+          }}
           disabled={isConnecting}
         >
           <Text style={styles.connectBtnText}>
-            {isConnecting ? 'Connecting via WiFi...' : 'Connect via WiFi'}
+            {isConnecting && isAutoDiscovering ? 'Auto-discovering TV...' : 'Auto-Connect'}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[
+            styles.connectBtn, 
+            { backgroundColor: '#ff9500' },
+            currentFocusedElement === 'manual-connect' && styles.focusedElement
+          ]} 
+          onPress={() => {
+            setIsAutoDiscovering(false);
+            connectToTV();
+          }}
+          disabled={isConnecting}
+        >
+          <Text style={styles.connectBtnText}>
+            {isConnecting && !isAutoDiscovering ? 'Connecting manually...' : 'Manual Connect'}
           </Text>
         </TouchableOpacity>
 
@@ -888,14 +1474,17 @@ export default function App() {
         </View>
         
         <TouchableOpacity 
-          style={styles.wifiSetupBtn}
+          style={[
+            styles.wifiSetupBtn,
+            currentFocusedElement === 'wifi-setup' && styles.focusedElement
+          ]}
           onPress={startSetup}
         >
           <Text style={styles.wifiSetupIcon}>⚙️</Text>
           <Text style={styles.wifiSetupText}>WiFi Setup</Text>
         </TouchableOpacity>
         
-        {renderInstructionsModal()}
+        {renderInitialInstructionsModal()}
         {renderWiFiSetupModal()}
       </View>
     );
@@ -906,6 +1495,10 @@ export default function App() {
     return renderVideoCallJoining();
   } else if (currentAppState === 'video-call-active' && videoCallState === 'active') {
     return renderVideoCallActive();
+  } else if (currentAppState === 'gamepage') {
+    return renderGamesRemoteControl();
+  } else if (currentAppState === 'settings') {
+    return renderSettingsRemoteControl();
   } else {
     return renderRemoteControl();
   }
@@ -1608,6 +2201,13 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 24,
   },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#007aff',
+  },
+  settingsCard: {
+    backgroundColor: 'rgba(149, 165, 166, 0.2)',
+  },
   instructionsButtons: {
     flexDirection: 'row',
     gap: 12,
@@ -1767,5 +2367,30 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  
+  // Remove coming soon styles since we're enabling the features
+  // comingSoonCard: {
+  //   opacity: 0.6,
+  // },
+  // comingSoonIcon: {
+  //   opacity: 0.7,
+  // },
+  // comingSoonLabel: {
+  //   color: '#ffd700',
+  //   fontSize: 10,
+  //   fontWeight: '600',
+  //   marginTop: 4,
+  // },
+  
+  // Focus indicator for hardware navigation
+  focusedElement: {
+    borderWidth: 3,
+    borderColor: '#007aff',
+    shadowColor: '#007aff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
   },
 });

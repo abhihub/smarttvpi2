@@ -20,6 +20,16 @@ const wsServer = new WebSocketServer(8080);
 // Initialize WiFi manager
 const wifiManager = new WiFiManager();
 
+// Set up IPC handler for text input requests
+ipcMain.handle('request-text-input', (event, field, currentValue) => {
+  console.log('📱 IPC: Text input request:', field, currentValue);
+  
+  // Send text input request to mobile app via WebSocket
+  if (wsServer.mobileWebSocket) {
+    wsServer.handleTextInputRequest(field, currentValue, wsServer.mobileWebSocket);
+  }
+});
+
 console.log('🚀 MAIN PROCESS STARTING');
 console.log('📋 Main process config:', global.appConfig);
 console.log('🔧 Command line args:', process.argv);

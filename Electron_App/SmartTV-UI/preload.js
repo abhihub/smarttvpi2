@@ -18,7 +18,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   navigateToHome: () => ipcRenderer.invoke('nav:home'),
   
   // Configuration
-  getConfig: () => ipcRenderer.invoke('config:get')
+  getConfig: () => ipcRenderer.invoke('config:get'),
+  
+  // Text input request for mobile app
+  requestTextInput: (field, currentValue) => ipcRenderer.invoke('request-text-input', field, currentValue)
 });
 
 // Config will be injected by main process via executeJavaScript

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SmartTV Remote",
-    "slug": "first-ship-1",
+    "slug": "first-ship",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/sample_icon.png",
@@ -37,10 +37,10 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "owner": "daksh-123",
+    "owner": "da999",
     "extra": {
       "eas": {
-        "projectId": "84a99270-f1a7-4e60-8ad4-18b4274bd728"
+        "projectId": "9d0b93db-2dc8-4615-8f09-25e869ae603b"
       }
     }
   }
